@@ -1,0 +1,18 @@
+doctype html
+html(lang='en')
+ head
+   title Parking Experiment
+ body
+   h1 Yo Wassup Let's see some spots
+   div.remark
+    thead
+      tr 
+       th Park Spot  
+       th Distance
+         br
+    tbody
+    each park in Park
+      tr 
+        td #{park.SpaceNum}   
+        td #{park.Distance} 
+          br
