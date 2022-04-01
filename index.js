@@ -28,6 +28,11 @@ db.once('open', function() {
     console.log(" MongoDb Connection Successful!");
 });
 
+//intialise database
+databaseFunctions.initDatabase(()=> {
+    console.log('Database Initialised!!')
+}); //create all spaces and fill with data. 
+
 //setup mqtt
 var client  = mqtt.connect("mqtt://test.mosquitto.org",{clientId:"mqttjs01"});
 console.log("MQTT connected flag  "+client.connected);
@@ -43,7 +48,6 @@ routes(app);
 
 //server setup
 app.listen(PORT, () =>{
-databaseFunctions.createFirstEntry(); //create space001
 console.log(`Your server is running on port ${PORT}`)
 });
 

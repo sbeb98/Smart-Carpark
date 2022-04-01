@@ -7,9 +7,12 @@ const ParkSchema = new Schema ({
         type: String, 
         required: 'Enter a Space Number'
     },
-    Distance:{
+    Occupied:{
         type: Number, 
         
+    },
+    Percentage:{
+        type: Number,
     },
     created_date:{
         type: Date, 
@@ -20,24 +23,48 @@ const ParkSchema = new Schema ({
 
 var ParkData = mongoose.model('Parkdb', ParkSchema);
 
-//creates the database entry that will be edited in this initial program
-const createFirstEntry = () =>{
-    const Park001 = new ParkData(
+
+const initDatabase = (callback) =>{
+
+    ClearDatabase();
+    createDocument('Space001', true);
+    callback();       
+} 
+
+//FUNCTION: removes all enteries from current database, 
+function ClearDatabase() {
+    ParkData.deleteMany({}, function(err){
+        if (err)
+            throw err;
+    });
+}
+
+//FUNCTION: creates entries for the 
+
+
+//FUNCTION: creates a single database entry
+
+function createDocument (name, occupied_input){
+    const Parkdocco = new ParkData(
         {
-            SpaceNum: 'Park001', 
-            Distance: 0
+            SpaceNum: name, 
+            Occupied: occupied_input
         });
-  Park001.save(function (err) {
+    console.log('hello');
+
+    Parkdocco.save(function (err) {
         if (err) 
             return handleError(err)
     });
-} 
+
+
+}
 
 //appends database entry to the current measurement
-const appendPark =(SpaceName, distUpdate) =>{
+const appendPark =(SpaceName, occupied_input) =>{
     const query =  {SpaceNum: SpaceName};
     console.log("MQTT Message Recieved= " + distUpdate);
-    let doc= ParkData.findOneAndUpdate(query, {Distance: distUpdate }, {new: true}, function(err) {
+    let doc= ParkData.findOneAndUpdate(query, {Occupied: occupied_input }, {new: true}, function(err) {
         if (err) console.log("Error: MQTT update")
          });
 }
@@ -56,17 +83,13 @@ const getPark = (SpaceName, req, res) =>{
 
 const getAllPark = (req, res) =>{
     ParkData.find({}, (err, Park) =>{
-        //res.json(Park);
-        console.log(Park[0].SpaceNum);
-        console.log(Park[0].Distance);
-       // let parkArray = JSON.parse(Park);
        res.render('index', {Park});
     })
 }
 
 //send data to other files
 const dataFunctions ={
-    createFirstEntry: createFirstEntry, 
+    initDatabase: initDatabase, 
     appendPark : appendPark, 
     getPark : getPark,
     getAllPark : getAllPark
