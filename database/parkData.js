@@ -8,7 +8,7 @@ const ParkSchema = new Schema ({
         required: 'Enter a Space Number'
     },
     Occupied:{
-        type: Number, 
+        type: Boolean, 
         
     },
     Percentage:{
@@ -27,7 +27,7 @@ var ParkData = mongoose.model('Parkdb', ParkSchema);
 const initDatabase = (callback) =>{
 
     ClearDatabase();
-    createDocument('Space001', true);
+    createRealTimeDatabase(20);
     callback();       
 } 
 
@@ -39,7 +39,20 @@ function ClearDatabase() {
     });
 }
 
-//FUNCTION: creates entries for the 
+//FUNCTION: creates entries for all 20 carspots in the carpark
+function createRealTimeDatabase (numOfDocs){
+    let i; 
+
+    for(i=1;i<=numOfDocs;i++)
+    {
+        //Choose the name in the form 'Park001'
+        let name = 'Park0' + String(i).padStart(2,'0');
+        //find random Bool value
+        let occupied_input= Math.random() < 0.5;
+        //make document
+        createDocument(name, occupied_input);
+    }
+}
 
 
 //FUNCTION: creates a single database entry
@@ -50,7 +63,6 @@ function createDocument (name, occupied_input){
             SpaceNum: name, 
             Occupied: occupied_input
         });
-    console.log('hello');
 
     Parkdocco.save(function (err) {
         if (err) 
