@@ -5,6 +5,7 @@ var mqtt = require('mqtt');
 var mongoose = require('mongoose');
 const mqttSubscribe = require('./mqtt/mqtt_test');
 const databaseFunctions = require('./database/parkData');
+const initPastParkDatabase = require('./database/pastParkData');
 const pug = require('pug');
 
 //setup
@@ -28,10 +29,15 @@ db.once('open', function() {
     console.log(" MongoDb Connection Successful!");
 });
 
-//intialise database
-databaseFunctions.initDatabase(()=> {
-    console.log('Database Initialised!!')
-}); //create all spaces and fill with data. 
+//intialise databases create all spaces and fill with data. 
+databaseFunctions.initParkDatabase(()=> {
+    console.log('Database 1 Initialised!!')
+}); 
+
+initPastParkDatabase(() => {
+    console.log('Database 2 Initialised!!')
+});
+
 
 //setup mqtt
 var client  = mqtt.connect("mqtt://test.mosquitto.org",{clientId:"mqttjs01"});

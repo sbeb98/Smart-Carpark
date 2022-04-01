@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const ParkSchema = new Schema ({
     SpaceNum:{
         type: String, 
-        required: 'Enter a Space Number'
     },
     Occupied:{
         type: Boolean, 
@@ -21,15 +20,15 @@ const ParkSchema = new Schema ({
 
 });
 
-var ParkData = mongoose.model('Parkdb', ParkSchema);
+let ParkData = mongoose.model('ParkCol', ParkSchema);
 
-
-const initDatabase = (callback) =>{
+//FUNCTION: function to call other intialisation functions
+const initParkDatabase = (callback) =>{
 
     ClearDatabase();
     createRealTimeDatabase(20);
     callback();       
-} 
+}
 
 //FUNCTION: removes all enteries from current database, 
 function ClearDatabase() {
@@ -50,14 +49,14 @@ function createRealTimeDatabase (numOfDocs){
         //find random Bool value
         let occupied_input= Math.random() < 0.5;
         //make document
-        createDocument(name, occupied_input);
+        createParkDocument(name, occupied_input);
     }
 }
 
 
-//FUNCTION: creates a single database entry
+//FUNCTION: creates a single database entry in real time database
 
-function createDocument (name, occupied_input){
+function createParkDocument (name, occupied_input){
     const Parkdocco = new ParkData(
         {
             SpaceNum: name, 
@@ -71,6 +70,7 @@ function createDocument (name, occupied_input){
 
 
 }
+
 
 //appends database entry to the current measurement
 const appendPark =(SpaceName, occupied_input) =>{
@@ -97,11 +97,17 @@ const getAllPark = (req, res) =>{
     ParkData.find({}, (err, Park) =>{
        res.render('index', {Park});
     })
+    ParkData.findOne({}, function(err, data){
+        if(err)
+        throw err;
+
+        console.log(data);
+    });
 }
 
 //send data to other files
 const dataFunctions ={
-    initDatabase: initDatabase, 
+    initParkDatabase: initParkDatabase, 
     appendPark : appendPark, 
     getPark : getPark,
     getAllPark : getAllPark
