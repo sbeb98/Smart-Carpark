@@ -1,7 +1,17 @@
 import socket
 import sys
+import paho.mqtt.client as mqtt
+
+#initialise mqtt connection
+
+mqttBroker = "test.mosquitto.org"
+
+client = mqtt.Client()
+client.connect(mqttBroker)
+
+
  
-HOST = "" # Symbolic name, meaning all available interfaces
+HOST = "" # Symbolic name, meaning all availableinterfaces
 PORT = 8888 # Arbitrary non-privileged port
  
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,5 +38,7 @@ while True:
     print ('Connected with ' + addr[0] + ':' + str(addr[1]) + " " )
     thevalue = int(data.decode("utf-8"))
     print ("Value: ", thevalue)
+    client.publish("starto/attempt", thevalue);
+    print( "Just Published " +str(thevalue) + " to server") 
  
 s.close()
