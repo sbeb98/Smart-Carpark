@@ -53,9 +53,19 @@ function createPastParkDocument (name){
     Parkdocco.save(function (err) {
         if (err) 
             return handleError(err)
-    });
-
-
+    });    
 }
 
-module.exports = initPastParkDatabase;
+const getAllPastPark = (req, res) =>{
+    PastParkData.find({}, (err, trendPark) =>{
+       res.render('trend', {trendPark});
+    })
+}
+
+
+const PastDatabaseFunctions= {
+    initPastParkDatabase: initPastParkDatabase, 
+    getAllPastPark : getAllPastPark
+};
+
+module.exports = PastDatabaseFunctions;

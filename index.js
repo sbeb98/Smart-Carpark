@@ -5,7 +5,7 @@ var mqtt = require('mqtt');
 var mongoose = require('mongoose');
 const mqttSubscribe = require('./mqtt/mqtt_test');
 const databaseFunctions = require('./database/parkData');
-const initPastParkDatabase = require('./database/pastParkData');
+const PastDatabaseFunctions = require('./database/pastParkData');
 const pug = require('pug');
 
 //setup
@@ -33,8 +33,7 @@ db.once('open', function() {
 databaseFunctions.initParkDatabase(()=> {
     console.log('Database 1 Initialised!!')
 }); 
-
-initPastParkDatabase(() => {
+PastDatabaseFunctions.initPastParkDatabase(() => {
     console.log('Database 2 Initialised!!')
 });
 

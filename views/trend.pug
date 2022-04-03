@@ -4,18 +4,152 @@ html(lang='en')
    title Parking Experiment
  body
    h1 Yo Wassup Let's see some trends
-   div.remark
+   p
+    -let days = ['Day1', 'Day2', 'Day3', 'Day4', 'Day5', 'Day6', 'Day7', 'Day8', 'Day9', 'Day10', 'Day11', 'Day12', 'Day13', 'Day14']
+    select(name="dayDropdown", id="dayDropdown" class = "btn-success dropdown-toggle")
+        each day in days
+            option=day
+
+    -let hours = ['Hour1','Hour2','Hour3','Hour4','Hour5','Hour6','Hour7','Hour8','Hour9','Hour10','Hour11','Hour12','Hour13','Hour14','Hour15','Hour16','Hour17','Hour18','Hour19','Hour20','Hour21','Hour22','Hour23','Hour24', ]    
+    select(name="hourDropdown", id="hourDropdown" class = "btn-success dropdown-toggle")
+        each hour in hours
+            option=hour
+    input(type="button", value="Submit", id="submitButton")
+    br
 
 
 
-    thead
-      tr 
-       th Park Spot  
-       th Occupied
+
+    script.
+        function changeRowData(dayHourStr, idString, dataNum){
+
+            document.getElementById(idString).innerText= trendPark[dataNum][dayHourStr];
+
+        }
+        let trendPark= !{JSON.stringify(trendPark)};
+        let dayDropdownId = document.getElementById('dayDropdown');
+        let hourDropdownId = document.getElementById('hourDropdown');
+        let buttonId = document.getElementById('submitButton');
+
+
+        buttonId.addEventListener('click', function(event){
+
+            let dayStr= dayDropdownId.options[dayDropdownId.selectedIndex].text;
+            let hourStr = hourDropdownId.options[hourDropdownId.selectedIndex].text;
+            let dataStr= dayStr + hourStr;
+
+            let i;
+            for(i=1;i<=20; ++i)
+            {
+                let idString= 'data' + i;
+                changeRowData(dataStr, idString, i-1); 
+            }
+        });
+
+div       
+  thead
+    tr 
+     th Park Spot  
+     th Occupied
+       br
+  tbody
+    tr 
+      td #{trendPark[0].SpotNum}   
+      td 
+        span(id='data1') #{trendPark[0].Day1Hour1} 
+        br 
+    tr 
+      td #{trendPark[1].SpotNum}   
+      td
+        span(id='data2') #{trendPark[1].Day1Hour1} 
+        br
+    tr 
+      td #{trendPark[2].SpotNum}   
+      td
+        span(id='data3') #{trendPark[2].Day1Hour1} 
+        br
+    tr 
+      td #{trendPark[3].SpotNum}   
+      td
+        span(id='data4') #{trendPark[3].Day1Hour1} 
+        br
+    tr 
+      td #{trendPark[4].SpotNum}   
+      td
+        span(id='data5') #{trendPark[4].Day1Hour1} 
+        br
+    tr 
+      td #{trendPark[5].SpotNum}   
+      td
+        span(id='data6') #{trendPark[5].Day1Hour1} 
+        br
+    tr 
+       td #{trendPark[6].SpotNum}   
+       td
+         span(id='data7') #{trendPark[6].Day1Hour1} 
          br
-    tbody
-    each park in Park
-      tr 
-        td #{park.SpaceNum}   
-        td #{park.Occupied} 
-          br
+    tr 
+       td #{trendPark[7].SpotNum}   
+       td
+         span(id='data8') #{trendPark[7].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[8].SpotNum}   
+       td
+         span(id='data9') #{trendPark[8].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[9].SpotNum}   
+       td
+         span(id='data10') #{trendPark[9].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[10].SpotNum}   
+       td
+         span(id='data11') #{trendPark[10].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[11].SpotNum}   
+       td
+         span(id='data12') #{trendPark[11].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[12].SpotNum}   
+       td
+         span(id='data13') #{trendPark[12].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[13].SpotNum}   
+       td
+         span(id='data14') #{trendPark[13].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[14].SpotNum}   
+       td
+         span(id='data15') #{trendPark[14].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[15].SpotNum}   
+       td
+         span(id='data16') #{trendPark[15].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[16].SpotNum}   
+       td
+         span(id='data17') #{trendPark[16].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[17].SpotNum}   
+       td
+         span(id='data18') #{trendPark[17].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[18].SpotNum}   
+       td
+         span(id='data19') #{trendPark[18].Day1Hour1} 
+         br
+    tr 
+       td #{trendPark[19].SpotNum}   
+       td
+         span(id='data20') #{trendPark[19].Day1Hour1} 
+         br

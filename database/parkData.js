@@ -97,12 +97,6 @@ const getAllPark = (req, res) =>{
     ParkData.find({}, (err, Park) =>{
        res.render('index', {Park});
     })
-    ParkData.findOne({}, function(err, data){
-        if(err)
-        throw err;
-
-        console.log(data);
-    });
 }
 
 //send data to other files

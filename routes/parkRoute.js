@@ -1,4 +1,5 @@
 const databaseFunctions = require('../database/parkData');
+const PastDatabaseFunctions = require('../database/pastParkData');
 
 //for future declarations 
 
@@ -11,7 +12,10 @@ const routes = (app) =>{
 //insert other operations at this address
 
 
-
+app.route('/trend')
+            .get((req,res)=>{
+                PastDatabaseFunctions.getAllPastPark(req, res);
+            })
 }
 
 module.exports = routes; 
