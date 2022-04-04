@@ -3,6 +3,18 @@ import sys
 import paho.mqtt.client as mqtt
 from random import randint
 
+#function declarations
+def fillMessage(i, message):
+    if i<10:
+        spotName = "Park00" + str(i) + "-"
+         
+    else:
+        spotName = "Park0" + str(i) + "-"
+    
+    message= message + spotName + str(randint(0,100)) + " "
+    
+    return message
+
 #initialise mqtt connection
 
 mqttBroker = "test.mosquitto.org"
@@ -41,20 +53,13 @@ while True:
     print ("Value: ", thevalue)
 
     #create 20 values to send over mqtt
-    str message = "Park001 " + str(thevalue)
-    int i = 2
-    while i<= 20
-        fillMessage(i, message)
+    message = "Park001-" + str(thevalue) + " "
+    i = 2
+    while i<= 20:
+        message= fillMessage(i, message)
         i+= 1
     #send message to server
-    client.publish("starto/attempt", thevalue)
-    print( "Just Published " +str(thevalue) + " to server") 
+    client.publish("starto/attempt", message)
+    print( "Just Published " + message + " to server") 
  
 s.close()
-
-def fillMessage(i, message){
-    if i<10  
-        message=+ "PARK00" + i + " " + randint(0,100)
-    else
-        message=+ "PARK0" + i + " " + randint(0,100) 
-}
