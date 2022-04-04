@@ -1,8 +1,8 @@
 #include <ESP8266WiFi.h>
 
 
-const char* ssid     = "Telstra8A0916-2";//"Sebs phone";// // The SSID (name) of the Wi-Fi network you want to connect to
-const char* password = "zmzueffzyj";//"dragonite";//     // The password of the Wi-Fi network
+const char* ssid     = "Sebs phone";//"Telstra8A0916-2"; // The SSID (name) of the Wi-Fi network you want to connect to
+const char* password = "dragonite";//"zmzueffzyj";//     // The password of the Wi-Fi network
 
 WiFiClient wifiClient;
 
@@ -37,7 +37,7 @@ void setup()
 
 void loop() {
     const uint16_t port = 8888;          // port to use
-    const char * host = "192.168.0.13"; // address of server
+    const char * host = "192.168.43.86"; // address of server
     String msg;
 
     // Use WiFiClient class to create TCP connections

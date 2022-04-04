@@ -1,6 +1,7 @@
 import socket
 import sys
 import paho.mqtt.client as mqtt
+from random import randint
 
 #initialise mqtt connection
 
@@ -38,7 +39,22 @@ while True:
     print ('Connected with ' + addr[0] + ':' + str(addr[1]) + " " )
     thevalue = int(data.decode("utf-8"))
     print ("Value: ", thevalue)
-    client.publish("starto/attempt", thevalue);
+
+    #create 20 values to send over mqtt
+    str message = "Park001 " + str(thevalue)
+    int i = 2
+    while i<= 20
+        fillMessage(i, message)
+        i+= 1
+    #send message to server
+    client.publish("starto/attempt", thevalue)
     print( "Just Published " +str(thevalue) + " to server") 
  
 s.close()
+
+def fillMessage(i, message){
+    if i<10  
+        message=+ "PARK00" + i + " " + randint(0,100)
+    else
+        message=+ "PARK0" + i + " " + randint(0,100) 
+}
