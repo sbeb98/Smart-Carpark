@@ -57,15 +57,51 @@ function createPastParkDocument (name){
 }
 
 const getAllPastPark = (req, res) =>{
-    PastParkData.find({}, (err, trendPark) =>{
-       res.render('trend', {trendPark});
-    })
+    let query = PastParkData.find({});
+    return query;
 }
 
 
+
+
+async function appendPastDocument(Spotname, newPercentage){
+
+    const query =  {SpotNum: Spotname};
+    PastParkData.findOne(query)
+    .then(PastPark =>{
+        //trendPark[dataNum][dayHourStr];
+
+        let dayIndex, hourIndex;
+
+        for(dayIndex= 14; dayIndex>0; --dayIndex){
+
+            for(hourIndex =23; hourIndex>0; --hourIndex){
+
+                let dayHourStr= 'Day'+ String(dayIndex) + 'Hour' + String(hourIndex + 1);
+                let newdayHourStr= 'Day'+ String(dayIndex) + 'Hour' + String(hourIndex);
+
+                PastPark[dayHourStr] = PastPark[newdayHourStr];
+            }
+
+        }
+
+        PastPark.Day1Hour1 = newPercentage; 
+
+        return PastPark;
+    })
+    .then(PastPark =>{
+        PastPark.save();
+    })
+    .catch((err)=>{
+        console.error(err);
+    })
+}
+
 const PastDatabaseFunctions= {
     initPastParkDatabase: initPastParkDatabase, 
-    getAllPastPark : getAllPastPark
+    getAllPastPark : getAllPastPark,
+    appendPastDocument : appendPastDocument,
+    PastParkData : PastParkData
 };
 
 module.exports = PastDatabaseFunctions;

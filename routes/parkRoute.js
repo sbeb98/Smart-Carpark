@@ -6,16 +6,29 @@ const PastDatabaseFunctions = require('../database/pastParkData');
 const routes = (app) =>{ 
     app.route('/')
         .get((req, res)=>{
-            databaseFunctions.getAllPark(req, res);  //here reference a function from a database/mqtt file that retrieves data and displays
-            });
+            databaseFunctions.ParkData.find()
+            .then(Park =>{
+                res.render('index', {Park})
+            })
+            .catch(e =>{
+                console.error(e);
+            })
+        })
+            
 
 //insert other operations at this address
 
 
 app.route('/trend')
             .get((req,res)=>{
-                PastDatabaseFunctions.getAllPastPark(req, res);
+                PastDatabaseFunctions.PastParkData.find()
+                .then(trendPark =>{
+                    res.render('trend', {trendPark})
+                })
+                .catch((err)=>{
+                console.error(err)
             })
-}
+                })
+ }
 
 module.exports = routes; 

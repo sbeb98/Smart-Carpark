@@ -2,20 +2,110 @@
 //then make a function to call on and send data
 
 var mqtt = require('mqtt');
+const ParkData = require('../database/parkData');
 const databaseFunctions = require('../database/parkData');
+const PastDatabaseFunctions = require('../database/pastParkData');
+
+let timePastRecieved; 
 
 //subscribe to mqtt topic, set 
 const mqttSubscribe = (client) => {
     client.subscribe("starto/attempt");
     client.on('message', function(topic, message, packet){
-        //determine if spot filled or not
-        let occupied;
-        if (message >= 15)
-            occupied = true;
-        else 
-            occupied = false; 
-        databaseFunctions.appendPark('Park001', occupied);
-    });
+
+        message = message + ' '
+        console.log(message);
+        mqttPacketProcess(message);
+    });    
+}
+
+
+async function mqttPacketProcess(message){
+    
+        //get all current Park Data
+    try{
+        let Park = await databaseFunctions.ParkData.find().exec();  //TODO: MAKE THIS SYNCHRONOUS/AWAIT
+
+        console.log();
+        //use regex to seperate message into spotname + data
+        let messageArray = message.split(" ");
+
+        //determine interval from last packet
+        let totalPastTime;
+        let interval; 
+        let timeRecieved = new Date;
+        let newHourFlag = false;
+
+        if (!timePastRecieved){   //if this is the first packet of data ignore percentage and set up for next packet
+            timePastRecieved = new Date;
+            totalPastTime= timePastRecieved.getMinutes() + timePastRecieved.getSeconds()/60;
+            interval =0; 
+        }
+        else {
+            totalPastTime= timePastRecieved.getMinutes() + timePastRecieved.getSeconds()/60;
+            interval = (timeRecieved.getMinutes() + timeRecieved.getSeconds()/60)  - totalPastTime; 
+
+            console.log(interval)
+        }
+         //if a new hour entered
+         if (interval <0) {
+            interval*=-1; 
+
+            newHourFlag = true; 
+
+            //do some stuff related to the pastPark database
+            //shift all data down
+            //record latest data into latest spot 
+        }
+
+        //loop through and store data into custom class
+        let i;
+
+        for (i=0;i<=19;++i){
+            let name = messageArray[i].slice(0,7);//Park001 -6 cha
+            let distance = messageArray[i].slice(8);//Park001-xxx
+        
+
+            //find correct parkSpot
+            let currentIndex = Park.map(function(e) {return e.SpaceNum}).indexOf(name);
+
+            //calculate new percentage
+            let pastTimeOccupied = totalPastTime*Park[currentIndex].Percentage/100;
+            let newTimeOccupied;
+
+            //Is this spot occupied for this interval or no
+            let occupied_input;
+            if (distance <= 15){
+                occupied_input = true;
+                newTimeOccupied = interval;
+            }       
+            else{
+                occupied_input = false;
+                newTimeOccupied =0; 
+            }  
+
+            //console.log(currentIndex + ' ' + newTimeOccupied + ' ' + pastTimeOccupied + ' ' + totalPastTime);
+
+            let percentage_input= 100*(newTimeOccupied + pastTimeOccupied)/(interval + totalPastTime); 
+
+            //amenga current document
+            databaseFunctions.appendPark(Park[currentIndex].SpaceNum, occupied_input, percentage_input);
+
+
+            //update past database
+        if(newHourFlag)
+            PastDatabaseFunctions.appendPastDocument(Park[currentIndex].SpaceNum, percentage_input);
+        
+        }
+
+        //update time of last packet recieved
+        timePastRecieved =timeRecieved; 
+
+
+    }catch(error){
+        console.log(error)
+    }
+
     
 }
 

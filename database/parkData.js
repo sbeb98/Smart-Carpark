@@ -48,19 +48,22 @@ function createRealTimeDatabase (numOfDocs){
         let name = 'Park0' + String(i).padStart(2,'0');
         //find random Bool value
         let occupied_input= Math.random() < 0.5;
+        //choose random percentage to start
+        let percentage_input = Math.floor(Math.random()*100);
         //make document
-        createParkDocument(name, occupied_input);
+        createParkDocument(name, occupied_input, percentage_input);
     }
 }
 
 
 //FUNCTION: creates a single database entry in real time database
 
-function createParkDocument (name, occupied_input){
+function createParkDocument (name, occupied_input, percentage_input){
     const Parkdocco = new ParkData(
         {
             SpaceNum: name, 
-            Occupied: occupied_input
+            Occupied: occupied_input,
+            Percentage: percentage_input
         });
 
     Parkdocco.save(function (err) {
@@ -73,12 +76,12 @@ function createParkDocument (name, occupied_input){
 
 
 //appends database entry to the current measurement
-const appendPark =(SpaceName, occupied_input) =>{
+const appendPark =(SpaceName, occupied_input, percentage_input) =>{
     const query =  {SpaceNum: SpaceName};
-    console.log("MQTT Message Recieved= " + distUpdate);
-    let doc= ParkData.findOneAndUpdate(query, {Occupied: occupied_input }, {new: true}, function(err) {
-        if (err) console.log("Error: MQTT update")
-         });
+    ParkData.findOneAndUpdate(query, {Occupied: occupied_input , Percentage: percentage_input}, {new: true})
+    .catch((err)=> {
+        if (err) console.error(err);
+         })
 }
 
 //gathers and returns distance data from selected database entry and sends result
@@ -93,10 +96,9 @@ const getPark = (SpaceName, req, res) =>{
     })
 }
 
-const getAllPark = (req, res) =>{
-    ParkData.find({}, (err, Park) =>{
-       res.render('index', {Park});
-    })
+const getAllPark = async() =>{
+    let query = ParkData.find({});
+    return query;
 }
 
 //send data to other files
@@ -104,8 +106,10 @@ const dataFunctions ={
     initParkDatabase: initParkDatabase, 
     appendPark : appendPark, 
     getPark : getPark,
-    getAllPark : getAllPark
+    getAllPark : getAllPark,
+    ParkData: ParkData
 };
 
 module.exports = dataFunctions; 
+
 
