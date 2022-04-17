@@ -8,8 +8,8 @@
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
 
-const char* ssid     = "Telstra8A0916-2";//"Sebs phone";// // The SSID (name) of the Wi-Fi network you want to connect to
-const char* password = "zmzueffzyj";//"dragonite";//     // The password of the Wi-Fi network
+const char* ssid     = "Sebs phone";// "Telstra8A0916-2";// The SSID (name) of the Wi-Fi network you want to connect to
+const char* password = "dragonite";//"zmzueffzyj";//;//     // The password of the Wi-Fi network
 
 WiFiClient wifiClient;
 MqttClient mqttClient(wifiClient);
