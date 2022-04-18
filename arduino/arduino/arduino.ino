@@ -12,11 +12,12 @@ const char* ssid     = "Sebs phone";// "Telstra8A0916-2";// The SSID (name) of t
 const char* password = "dragonite";//"zmzueffzyj";//;//     // The password of the Wi-Fi network
 
 WiFiClient wifiClient;
+WiFiClient client;
 MqttClient mqttClient(wifiClient);
 
 const char broker[] = "test.mosquitto.org";
 int        port     = 1883;
-const char topic[]  = "starto/attempt";
+const char topic[]  = "SACapstone/Booking";
 
  unsigned long currentMillis = 0;
  unsigned long previousMillis = 0;
@@ -61,22 +62,34 @@ void setup()
     Serial.println(mqttClient.connectError());
 
     while (1);
-  }
+  }  
 
   Serial.println("You're connected to the MQTT broker!");
   Serial.println();
 }
 void loop() {
+
+   // Use WiFiClient class to create TCP connections
+    const uint16_t port = 8888;          // port to use
+    const char * host = "192.168.43.251"; // address of server
+
+ 
   // call poll() regularly to allow the library to send MQTT keep alive which
   // avoids being disconnected by the broker
   mqttClient.poll();
-
+  
   //set interval for sending messages (milliseconds)
   const long interval = 5000;
   currentMillis = millis();
   
   //does nothing if interval time not reached
   if (currentMillis - previousMillis >= interval) {
+
+       if (!client.connect(host, port)) {
+        Serial.println("connection failed");
+        Serial.println("wait 5 sec...");
+        delay(5000);
+    } 
 
     //Sends and Recieves Distance Data from sensor
     // Clears the trigPin condition
@@ -94,8 +107,8 @@ void loop() {
   
     Serial.print("Sending message to topic: ");
     Serial.println(topic);
-    Serial.print(distance);
-    Serial.print( " cm");
+    Serial.print("Raise");
+    Serial.println( " cm");
 
 
 /*
@@ -111,7 +124,7 @@ void loop() {
 
     // send message, the Print interface can be used to set the message contents
     mqttClient.beginMessage(topic);
-    mqttClient.print(distance);
+    mqttClient.print("Raise");
     mqttClient.endMessage();
 
     /*
@@ -126,8 +139,24 @@ void loop() {
 
     */
 
+    client.print(distance);
+    Serial.print("Sent : ");
+    Serial.println(distance);
+
+    delay(500);
+    Serial.println("Response: ");
+    while (client.available()){
+      Serial.print(char(client.read()));
+      
+    } 
+
+    //client.print("");
+    //client.stop();
+     
+      
     Serial.println();
     // save the last time a message was sent
     previousMillis = currentMillis;
   }
+  
 }

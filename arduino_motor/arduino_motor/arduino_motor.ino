@@ -41,8 +41,8 @@ void setup()
 
 void loop() {
     const uint16_t port = 8888;          // port to use
-    const char * host = "192.168.43.86"; // address of server
-    String msg;
+    const char * host = "192.168.43.251"; // address of server
+    String msg ="";
 
     // Use WiFiClient class to create TCP connections
     WiFiClient client;
@@ -54,15 +54,28 @@ void loop() {
         return;
     }
 
-    char command = client.read();
+    client.print("Motor");
+    Serial.print("Sent : ");
+    Serial.println("Motor");
 
-    if (command){
-      Serial.println("Command: " + command)
-      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-    }
+    delay(500);
     
+    Serial.println("Response: ");
+    while (client.available()){
+     char _byte=char(client.read());
+     msg += _byte;
+    } 
+
+    Serial.println(msg);   
+    Serial.println();
   
 
-  delay(1000)
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
+    if (msg.length()){
+      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (HIGH is the voltage level)
+    }
+    
+  msg="";
+
+  delay(400);
+  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage LOW
 }
