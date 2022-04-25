@@ -20,22 +20,24 @@ void setup()
   //Serial.println("Ultrasonic Sensor HC-SR04 Transmit via MQTT"); // print some text in Serial Monitor
   //Serial.println("with ESP8266");  
 
-  WiFi.begin(ssid, password);             // Connect to the network
-  Serial.print("Connecting to ");
-  Serial.print(ssid); Serial.println(" ...");
+//  WiFi.begin(ssid, password);             // Connect to the network
+//  Serial.print("Connecting to ");
+//  Serial.print(ssid); Serial.println(" ...");
+//
+//  int i = 0;
+//  while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
+//    delay(1000);
+//    Serial.print(++i); Serial.print(' ');
+//  }
+//
+//  Serial.println('\n');
+//  Serial.println("Connection established!");  
+//  Serial.print("IP address:\t");
+//  Serial.println(WiFi.localIP());         // Send the IP address of the ESP8266 to the computer
 
-  int i = 0;
-  while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
-    delay(1000);
-    Serial.print(++i); Serial.print(' ');
-  }
+  pinMode(D1, OUTPUT);
 
-  Serial.println('\n');
-  Serial.println("Connection established!");  
-  Serial.print("IP address:\t");
-  Serial.println(WiFi.localIP());         // Send the IP address of the ESP8266 to the computer
-
-  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(D1, LOW);
 
 }
 
@@ -45,37 +47,40 @@ void loop() {
     String msg ="";
 
     // Use WiFiClient class to create TCP connections
-    WiFiClient client;
+   // WiFiClient client;
 
-    if (!client.connect(host, port)) {
-        Serial.println("connection failed");
-        Serial.println("wait 5 sec...");
-        delay(5000);
-        return;
-    }
-
-    client.print("Motor");
-    Serial.print("Sent : ");
-    Serial.println("Motor");
-
-    delay(500);
+//    if (!client.connect(host, port)) {
+//        Serial.println("connection failed");
+//        Serial.println("wait 5 sec...");
+//        delay(5000);
+//        return;
+//    }
+//
+//    client.print("Motor");
+//    Serial.print("Sent : ");
+//    Serial.println("Motor");
+//
+//    delay(500);
+//    
+//    Serial.println("Response: ");
+//    while (client.available()){
+//     char _byte=char(client.read());
+//     msg += _byte;
+//    } 
+//
+//    Serial.println(msg);   
+//    Serial.println();
+//  
+//
+//    if (msg.length()){
+      digitalWrite(D1, HIGH);   // turn the LED on (HIGH is the voltage level)
+      Serial.println(analogRead(A0));
+    //}
     
-    Serial.println("Response: ");
-    while (client.available()){
-     char _byte=char(client.read());
-     msg += _byte;
-    } 
+  //msg="";
 
-    Serial.println(msg);   
-    Serial.println();
-  
-
-    if (msg.length()){
-      digitalWrite(LED_BUILTIN, LOW);   // turn the LED on (HIGH is the voltage level)
-    }
-    
-  msg="";
-
-  delay(400);
-  digitalWrite(LED_BUILTIN, HIGH);    // turn the LED off by making the voltage LOW
+  delay(2000);
+  digitalWrite(D1, LOW);    // turn the LED off by making the voltage LOW
+  Serial.println(analogRead(A0));
+  delay(2000);
 }

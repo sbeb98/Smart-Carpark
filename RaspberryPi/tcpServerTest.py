@@ -51,7 +51,7 @@ def service_connection(key, mask):
             sel.unregister(sock)
             sock.close()
     if mask & selectors.EVENT_WRITE:
-        if : data.message_tcp
+        if  data.message_tcp: 
             #create 20 values to send over mqtt
             message = "Park001-" + str(data.message_tcp) + " "
             i = 2

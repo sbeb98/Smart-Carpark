@@ -6,7 +6,9 @@ var mongoose = require('mongoose');
 const mqttSubscribe = require('./mqtt/mqtt_test');
 const databaseFunctions = require('./database/parkData');
 const PastDatabaseFunctions = require('./database/pastParkData');
+const BookDatabase = require('./database/bookingData')
 const pug = require('pug');
+const bodyparser = require('body-parser');
 
 //setup
 const app = express();
@@ -36,6 +38,9 @@ databaseFunctions.initParkDatabase(()=> {
 PastDatabaseFunctions.initPastParkDatabase(() => {
     console.log('Database 2 Initialised!!')
 });
+BookDatabase.ClearDatabase(()=>{
+    console.log('Database 3 Initialised!!')
+})
 
 
 //setup mqtt
@@ -48,8 +53,12 @@ client.once("MQTT connect",function(){
 //mqtt subscribe       //link to a function in mqtt/database to put data in a database
 mqttSubscribe(client);
 
+//use body Parser
+app.use(bodyparser.urlencoded({extended:false}))
+app.use(bodyparser.json())
+
 //send app access to routes.js
-routes(app); 
+routes(app, client); 
 
 //server setup
 app.listen(PORT, () =>{
