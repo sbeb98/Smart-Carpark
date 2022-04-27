@@ -1,6 +1,7 @@
 const databaseFunctions = require('../database/parkData');
 const PastDatabaseFunctions = require('../database/pastParkData');
 const { BookData } = require('../database/bookingData');
+const bookHandleFunc= require('../Booking/bookHandle');
 
 //for future declarations 
 
@@ -64,34 +65,33 @@ const routes = (app, client) =>{
                     else{
 
                     let query = {Day: bookingData.dayDropdown}
-                    BookData.find(query);
-                    let startStringHours = Number(toString(bookingData.hourStartDropdown).slice(0,2));
-                    let endStringHours = Number(toString(bookingData.hourEndDropdown).slice(0,2));
-                    let startStringMin = Number(toString(bookingData.hourStartDropdown).slice(2));
-                    let endStringMin = Number(toString(bookingData.hourEndDropdown).slice(2));
+                    Promise.all([BookData.find(query).exec(), bookHandleFunc.createBin(bookingData)])
+                        .then(results => {
+                            let i, overlapCount =0;
+                            for (i=0; i< results[0].length ; ++i ){
+                                let test = results[1] | results[0][i].dataBinPoints;
+                                if(test){
+                                    ++overlapCount;
+                                    if (overlapCount>=10){
+                                        throw new Error ('No Bookings Available');
+                                    }
+                                }
 
-                    let durationHours = endStringHours - startStringHours + (endStringMin - startStringMin)/60
-                    let noPoints = durationHours * 2;
-                    let startPoint = (startStringHours - 8) + startStringMin/30;
+                            }
+                            
+                            res.send("Your Booking has been made")
 
-                    let i;
-                    let bin=0b00000000000000000000000000000000; 
-                    
-                    //push into var, number of positive data points
-                    for(i=0; i<noPoints; ++i){
-                        bin << 1;
-                        bin + 1; 
-                    }
+                        })
+                        .then() //store data in database and process async timer for mqtt
+                        .catch((e) => {
+                            if (e === 'No Bookings Available')
+                                res.send('No Bookings Available')
+                            else{
+                                res.send ('Unknown Booking Error')
+                                console.error('Unknown Booking Error')
+                            }
 
-                    //push all bits to the starting pos
-                    for(i=0; i<startPoint; ++i)
-                    {
-                        bin<<1;
-                    }
-
-
-
-                    res.send("Your Booking has been made")
+                        })
 
                     }
 
