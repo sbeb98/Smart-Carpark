@@ -69,7 +69,8 @@ const routes = (app, client) =>{
                         .then(results => {
                             let i, overlapCount =0;
                             for (i=0; i< results[0].length ; ++i ){
-                                let test = results[1] | results[0][i].dataBinPoints;
+                                //console.log(results[0][i])
+                                let test = results[1] & results[0][i].dataBinPoints;
                                 if(test){
                                     ++overlapCount;
                                     if (overlapCount>=10){
@@ -80,11 +81,16 @@ const routes = (app, client) =>{
                             }
                             
                             res.send("Your Booking has been made")
+                            return results[1]; 
 
                         })
-                        .then() //store data in database and process async timer for mqtt
+                        .then(binary => {
+                            bookHandleFunc.addBooking(bookingData.dayDropdown, bookingData.hourStartDropdown,
+                                bookingData.hourEndDropdown, binary) 
+
+                        })
                         .catch((e) => {
-                            if (e === 'No Bookings Available')
+                            if (e.message === 'No Bookings Available')
                                 res.send('No Bookings Available')
                             else{
                                 res.send ('Unknown Booking Error')

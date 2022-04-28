@@ -7,11 +7,11 @@ const BookSchema = new Schema ({
         type: String, 
     },
     TimeStart:{
-        type: Boolean, 
+        type: Number 
         
     },
     TimeEnd:{
-        type: Number,
+        type: Number
     },
     dataBinPoints:{
         type: Number
@@ -32,7 +32,8 @@ function ClearDatabase(callback) {
     callback(); 
 }
 
-module.exports = {BookData : BookData, ClearDatabase : ClearDatabase}
+module.exports = {BookData : BookData, 
+                ClearDatabase : ClearDatabase}
 
 
 
