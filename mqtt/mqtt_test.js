@@ -8,8 +8,17 @@ const PastDatabaseFunctions = require('../database/pastParkData');
 
 let timePastRecieved; 
 
-//subscribe to mqtt topic, set 
-const mqttSubscribe = (client) => {
+//mqtt client
+var client  = mqtt.connect("mqtt://test.mosquitto.org",{clientId:"mqttjs01"});
+
+//initialise mqtt  
+function mqttInit () {
+    //init connection
+    console.log("MQTT connected flag  "+client.connected);
+    client.once("MQTT connect",function(){	
+	    console.log("MQTT connected  "+client.connected);
+})
+    //subscribe to topic
     client.subscribe("starto/attempt");
     client.on('message', function(topic, message, packet){
 
@@ -109,6 +118,13 @@ async function mqttPacketProcess(message){
     
 }
 
-module.exports = mqttSubscribe;
+//function to send commands to raspberry pi
+function mqttSend (message){
+    //"SACapstone/Booking"
+
+    client.publish("SACapstone/Booking", message);
+}
+
+module.exports = {mqttInit: mqttInit, mqttSend : mqttSend};
 
 

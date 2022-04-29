@@ -3,14 +3,14 @@ const {BookData} = require('../database/bookingData');
 //function to create binary data point var
 async function createBin(bookingData){
 
-    let startStringHours = Number(bookingData.hourStartDropdown.toString().slice(0,2));
-    let endStringHours = Number(bookingData.hourEndDropdown.toString().slice(0,2));
-    let startStringMin = Number(bookingData.hourStartDropdown.toString().slice(2));
-    let endStringMin = Number(bookingData.hourEndDropdown.toString().slice(2));
+    let startHours = Number(bookingData.hourStartDropdown.toString().slice(0,2));
+    let endHours = Number(bookingData.hourEndDropdown.toString().slice(0,2));
+    let startMin = Number(bookingData.hourStartDropdown.toString().slice(2));
+    let endMin = Number(bookingData.hourEndDropdown.toString().slice(2));
 
-    let durationHours = endStringHours - startStringHours + (endStringMin - startStringMin)/60
+    let durationHours = endHours - startHours + (endMin - startMin)/60
     let noPoints = durationHours * 2 +1;
-    let startPoint = (startStringHours - 8)*2 + startStringMin/30;
+    let startPoint = (startHours - 8)*2 + startMin/30;
 
 
     let i;
@@ -28,22 +28,19 @@ async function createBin(bookingData){
        bin = bin<<1;
     }
     console.log('Start Point = ' + startPoint + ' NO Points = ' + noPoints + ' result= ' + bin);
-    return bin;
+    return {bin : bin, startHours: (startHours + startMin), endHours : (endHours + endMin)}
 }
 //function to add booking into database
-async function addBooking(day, startTime, endTime, binary){
+function addBooking(day, startTime, endTime, binary){
     const bookDocco = new BookData(
         {
             Day: day, 
             TimeStart: startTime,
             TimeEnd: endTime,
-            dataBinPoints: binary
+            DataBinPoints: binary
         });
 
-    await bookDocco.save(function (err) {
-        if (err) 
-            return handleError(err)
-    });
+        return bookDocco;
 }
 
 

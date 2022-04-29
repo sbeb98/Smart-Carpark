@@ -2,10 +2,11 @@ const databaseFunctions = require('../database/parkData');
 const PastDatabaseFunctions = require('../database/pastParkData');
 const { BookData } = require('../database/bookingData');
 const bookHandleFunc= require('../Booking/bookHandle');
+const {mqttSend} = require('../mqtt/mqtt_test')
 
 //for future declarations 
 
-const routes = (app, client) =>{ 
+const routes = (app) =>{ 
     app.route('/')
         .get((req, res)=>{
             databaseFunctions.ParkData.find()
@@ -57,7 +58,7 @@ const routes = (app, client) =>{
                     console.log(bookingData);
 
                     
-
+//TODO: what if booking made within 15mins of current time
                     if (bookingData.hourStartDropdown >= bookingData.hourEndDropdown){
                         res.send("ERROR: Booking must end after it begins")
                     }
@@ -70,7 +71,7 @@ const routes = (app, client) =>{
                             let i, overlapCount =0;
                             for (i=0; i< results[0].length ; ++i ){
                                 //console.log(results[0][i])
-                                let test = results[1] & results[0][i].dataBinPoints;
+                                let test = results[1].bin & results[0][i].DataBinPoints;
                                 if(test){
                                     ++overlapCount;
                                     if (overlapCount>=10){
@@ -81,21 +82,102 @@ const routes = (app, client) =>{
                             }
                             
                             res.send("Your Booking has been made")
+                            console.log(results[1]);
                             return results[1]; 
 
                         })
-                        .then(binary => {
-                            bookHandleFunc.addBooking(bookingData.dayDropdown, bookingData.hourStartDropdown,
-                                bookingData.hourEndDropdown, binary) 
+                        .then(dataPassed => bookHandleFunc.addBooking(bookingData.dayDropdown, dataPassed.startHours,
+                                dataPassed.endHours, dataPassed.bin))
+                        .then(parkDocco => parkDocco.save(), () => { throw new Error('Booking Not Saved to Database')})
+                        .then(doc => {
+                            let now = new Date;
+                            let currentHours = now.getHours() + now.getMinutes()/60;
+                            let dayNum; 
+                            switch(doc.Day){
+
+                                case 'Monday':
+                                    dayNum = 1; 
+                                    break;
+
+                                case 'Tuesday': 
+                                    dayNum = 2;
+                                    break; 
+
+                                case 'Wednesday':
+                                    dayNum = 3; 
+                                    break;
+
+                                case 'Thursday': 
+                                    dayNum = 4;
+                                    break;
+
+                                case 'Friday': 
+                                    dayNum = 5;
+                                    break;
+
+                                case 'Saturday':
+                                    dayNum = 6;
+                                    break;
+
+                                case 'Sunday': 
+                                    dayNum = 7; 
+                                    break;
+                                
+                                default : 
+                                    throw new Error('Incorrect Date Input')
+                            }
+
+                            let timerLength = doc.TimeStart- currentHours;
+                            let days; 
+
+                            if (now.getDay() === dayNum){
+                                
+                                //if booking is in a week, add the hours in 7 days - the time between now and the booking
+                                if(timerLength < 0)
+                                    days = 7;
+                                else
+                                    return {timerLength : timerLength, id : doc.id}
+                                    
+                            }
+                            //if later this week
+                            if (dayNum > now.getDay())
+                                days = dayNum- now.getDay();
+                            else 
+                                days = 7 - now.getDay() + dayNum; 
+                            
+                            timerLength = days*24 + timerLength; 
+                            console.log(days);
+                            console.log(timerLength);
+
+                            return {timerLength : timerLength, id : doc.id}
+                            
 
                         })
+                        .then(dataToPass => {
+
+                            return delay((dataToPass.timerLength-0.25)*60*60*1000, dataToPass)
+                            //Set timer for 15 mins before booking with callback (lock spot)
+                        })  
+                        .then(dataToPass => {
+
+                            //function to check if space free TODO
+                            //send command to rasp to raise bollard
+                            mqttSend('Raise');
+
+                            return delay((dataToPass.timerLength)*60*60*1000, dataToPass.id)
+                        })
+                        .then(id =>{
+                            mqttSend('Lower');
+
+
+                            let query = {_id : id};
+                            return BookData.deleteOne(query).exec();
+
+                        })
+
                         .catch((e) => {
-                            if (e.message === 'No Bookings Available')
-                                res.send('No Bookings Available')
-                            else{
-                                res.send ('Unknown Booking Error')
-                                console.error('Unknown Booking Error')
-                            }
+                            console.error(e.message)
+                            res.send(e.message)
 
                         })
 
@@ -103,6 +185,12 @@ const routes = (app, client) =>{
 
                     
                 })
+    }
+
+function delay(milliseconds, dataToPass) {
+    return new Promise(function(resolve) { 
+        setTimeout(resolve(dataToPass), milliseconds)
+    });
     }
 
 
