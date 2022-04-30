@@ -1,7 +1,7 @@
 //declarations
 var express = require('express');
 var routes = require('./routes/parkRoute');
-var mqtt = require('mqtt'); 
+const mqtt = require('mqtt'); 
 var mongoose = require('mongoose');
 const {mqttInit} = require('./mqtt/mqtt_test');
 const databaseFunctions = require('./database/parkData');
@@ -44,14 +44,21 @@ BookDatabase.ClearDatabase(()=>{
 
 
 //setup mqtt
-mqttInit();
+//mqtt client
+var client  = mqtt.connect("mqtt://test.mosquitto.org",{clientId:"mqttjs02"});
+//init connection
+console.log("MQTT connected flag  "+client.connected);
+client.once("MQTT connect",function(){	
+    console.log("MQTT connected  "+client.connected);
+})
+mqttInit(client);
 
 //use body Parser
 app.use(bodyparser.urlencoded({extended:false}))
 app.use(bodyparser.json())
 
 //send app access to routes.js
-routes(app); 
+routes(app, client); 
 
 //server setup
 app.listen(PORT, () =>{

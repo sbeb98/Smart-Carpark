@@ -13,9 +13,8 @@ const BookSchema = new Schema ({
     TimeEnd:{
         type: Number
     },
-    dataBinPoints:{
+    DataBinPoints:{
         type: Number
-    
     }
     
 
