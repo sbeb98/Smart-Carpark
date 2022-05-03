@@ -2,19 +2,20 @@ var mongoose = require('mongoose');
 var PastParkData = require('./pastParkDataModel');
 
 //FUNCTION: function to call other intialisation functions
-const initPastParkDatabase = (callback) =>{
+async function initPastParkDatabase (){
 
-    ClearDatabase();
-    createTrendDatabase(20);
-    callback();       
+    await ClearDatabase();
+    await createTrendDatabase(20);
+    console.log('Database 2 Initialised!!')
 }
-
 //FUNCTION: removes all enteries from current database, 
-function ClearDatabase() {
-    PastParkData.deleteMany({}, function(err){
-        if (err)
-            throw err;
-    });
+async function ClearDatabase() {
+    try{
+        await PastParkData.deleteMany({})
+    }
+    catch(err){
+        throw new Error('Database not deleted');
+    }
 }
 
 function createTrendDatabase(numSpots){
@@ -30,30 +31,34 @@ function createTrendDatabase(numSpots){
 }
 //FUNCTION: creates a single database entry in past database
 
-function createPastParkDocument (name){
+async function createPastParkDocument (name){
 
-    //let randomValue = 
+    try{
 
-    let Parkdocco = new PastParkData(
-        {
-            SpotNum: name, 
-        });
-
-        let daysCount, hoursCount;
-        //loop for number of days (14)
-        for (daysCount=1; daysCount<=14; ++daysCount){
-
-            //loop for every hour(24)
-            for(hoursCount=1; hoursCount<=24; ++hoursCount){
-
-                Parkdocco['Day' + daysCount + 'Hour' + hoursCount] = Math.floor(Math.random()*100);
+        let Parkdocco = new PastParkData(
+            {
+                SpotNum: name, 
+            });
+    
+            let daysCount, hoursCount;
+            //loop for number of days (14)
+            for (daysCount=1; daysCount<=14; ++daysCount){
+    
+                //loop for every hour(24)
+                for(hoursCount=1; hoursCount<=24; ++hoursCount){
+    
+                    Parkdocco['Day' + daysCount + 'Hour' + hoursCount] = Math.floor(Math.random()*100);
+                }
             }
-        }
+    
+        await Parkdocco.save();
 
-    Parkdocco.save(function (err) {
-        if (err) 
-            return handleError(err)
-    });    
+    }
+    catch (err){
+        throw new Error('Document not Saved')
+    }
+
+        
 }
 
 const getAllPastPark = (req, res) =>{
@@ -63,11 +68,10 @@ const getAllPastPark = (req, res) =>{
 
 
 
-
-async function appendPastDocument(Spotname, newPercentage){
+function appendPastDocument(Spotname, newPercentage){
 
     const query =  {SpotNum: Spotname};
-    PastParkData.findOne(query)
+    PastParkData.findOne(query).exec()
     .then(PastPark =>{
         //trendPark[dataNum][dayHourStr];
 

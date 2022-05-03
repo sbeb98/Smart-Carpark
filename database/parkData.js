@@ -23,24 +23,28 @@ const ParkSchema = new Schema ({
 let ParkData = mongoose.model('ParkCol', ParkSchema);
 
 //FUNCTION: function to call other intialisation functions
-const initParkDatabase = (callback) =>{
+async function initParkDatabase (){
 
-    ClearDatabase();
-    createRealTimeDatabase(20);
-    callback();       
+    await ClearDatabase();
+    const pArray = createRealTimeDatabase(20); 
+    await Promise.all(pArray.map(doc => doc.save()));
+    console.log('Database 1 Initialised!!');   
 }
 
 //FUNCTION: removes all enteries from current database, 
-function ClearDatabase() {
-    ParkData.deleteMany({}, function(err){
-        if (err)
-            throw err;
-    });
+ function ClearDatabase() {
+    try{
+        ParkData.deleteMany({});
+    }
+    catch(err){
+        throw new Error('Database 1 not Cleared');
+    }
 }
 
 //FUNCTION: creates entries for all 20 carspots in the carpark
 function createRealTimeDatabase (numOfDocs){
     let i; 
+    let pArray = [""]; 
 
     for(i=1;i<=numOfDocs;i++)
     {
@@ -51,26 +55,30 @@ function createRealTimeDatabase (numOfDocs){
         //choose random percentage to start
         let percentage_input = Math.floor(Math.random()*100);
         //make document
-        createParkDocument(name, occupied_input, percentage_input);
+        pArray[i-1] = createParkDocument(name, occupied_input, percentage_input);
     }
+
+    return pArray;
 }
 
 
 //FUNCTION: creates a single database entry in real time database
 
 function createParkDocument (name, occupied_input, percentage_input){
-    const Parkdocco = new ParkData(
-        {
-            SpaceNum: name, 
-            Occupied: occupied_input,
-            Percentage: percentage_input
-        });
+    try {
 
-    Parkdocco.save(function (err) {
-        if (err) 
-            return handleError(err)
-    });
+        const Parkdocco = new ParkData(
+            {
+                SpaceNum: name, 
+                Occupied: occupied_input,
+                Percentage: percentage_input
+            });
 
+    return Parkdocco;
+    }
+    catch(err){
+        throw new Error('Error Saving new Document');
+    }
 
 }
 

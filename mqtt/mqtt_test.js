@@ -12,13 +12,12 @@ let timePastRecieved;
 function mqttInit (client) {
     //subscribe to topic
     client.subscribe("starto/attempt");
-    client.subscribe("SACapstone/Booking");
-    client.publish("SACapstone/Booking", 'hello');
+    // client.subscribe("SACapstone/Booking");
+    // client.publish("SACapstone/Booking", 'hello');
     client.on('message', function(topic, message, packet){
 
         message = message + ' '
         console.log(message);
-        if (topic === "starto/attempt")
         mqttPacketProcess(message);
     });    
 }

@@ -22,17 +22,21 @@ const BookSchema = new Schema ({
 
 let BookData = mongoose.model('BookCol', BookSchema);
 
-function ClearDatabase(callback) {
-    BookData.deleteMany({}, function(err){
-        if (err)
-            throw err;
-    });
+async function ClearDatabase() {
+    
+    try {
+        await BookData.deleteMany({});
 
-    callback(); 
+        console.log('Database 3 Initialised!!'); 
+    }
+    catch (err){
+        throw new Error('Booking Database not Cleared')
+    }
+    
 }
 
 module.exports = {BookData : BookData, 
-                ClearDatabase : ClearDatabase}
+                ClearBookDatabase : ClearDatabase}
 
 
 

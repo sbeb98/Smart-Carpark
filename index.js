@@ -4,10 +4,9 @@ var routes = require('./routes/parkRoute');
 const mqtt = require('mqtt'); 
 var mongoose = require('mongoose');
 const {mqttInit} = require('./mqtt/mqtt_test');
-const databaseFunctions = require('./database/parkData');
-const PastDatabaseFunctions = require('./database/pastParkData');
-const BookDatabase = require('./database/bookingData')
-const pug = require('pug');
+const {initParkDatabase} = require('./database/parkData');
+const {initPastParkDatabase} = require('./database/pastParkData');
+const {ClearBookDatabase} = require('./database/bookingData')
 const bodyparser = require('body-parser');
 
 //setup
@@ -15,53 +14,80 @@ const app = express();
 const PORT = 4000;
 app.set('view engine', 'pug');
 
-//mongoose connection
-mongoose.Promise =global.Promise;
-mongoose.connect('mongodb://localhost/PARKdb', {
-    useNewUrlParser: true, 
-    useUnifiedTopology: true
-});
-
-//check for successful connection 
-var db = mongoose.connection;
-
-db.on('error', console.error.bind(console, 'connection error:'));
- 
-db.once('open', function() {
-    console.log(" MongoDb Connection Successful!");
-});
-
-//intialise databases create all spaces and fill with data. 
-databaseFunctions.initParkDatabase(()=> {
-    console.log('Database 1 Initialised!!')
-}); 
-PastDatabaseFunctions.initPastParkDatabase(() => {
-    console.log('Database 2 Initialised!!')
-});
-BookDatabase.ClearDatabase(()=>{
-    console.log('Database 3 Initialised!!')
-})
-
-
-//setup mqtt
-//mqtt client
-var client  = mqtt.connect("mqtt://test.mosquitto.org",{clientId:"mqttjs02"});
-//init connection
-console.log("MQTT connected flag  "+client.connected);
-client.once("MQTT connect",function(){	
-    console.log("MQTT connected  "+client.connected);
-})
-mqttInit(client);
-
 //use body Parser
 app.use(bodyparser.urlencoded({extended:false}))
 app.use(bodyparser.json())
 
-//send app access to routes.js
-routes(app, client); 
 
-//server setup
-app.listen(PORT, () =>{
-console.log(`Your server is running on port ${PORT}`)
-});
+const init = async () =>{
+    try {
+
+    //connect to Mongoose
+    //setup mqtt and pass client object to parkRoutes file
+    await Promise.all([connectToMongoose()], [mqttSetup()])
+    //initalise databases
+    await Promise.all([initParkDatabase()], [initPastParkDatabase()], [ClearBookDatabase()])
+    //THEN: start server
+    //server setup
+    await app.listen(PORT);
+
+          //if success:
+    console.log(`Your server is running on port ${PORT}`)
+
+
+  
+
+        
+    } catch (err) {
+        console.error(err.message)
+        
+    }
+    
+}
+
+const connectToMongoose = async () => {
+
+    try{
+        mongoose.Promise =global.Promise;
+        await mongoose.connect('mongodb://localhost/PARKdb', {
+            useNewUrlParser: true, 
+            useUnifiedTopology: true
+        });
+
+        //if successful
+        console.log('Successfully Connected to Mongoose!!')
+        
+        //make error event for disconnection
+        mongoose.connection.on('error', err => {
+            console.error(err);
+          });
+
+        //await initDatabases();
+        
+    }
+    catch (err){
+        throw new Error('Unable to Connect to Mongoose')
+    }
+
+}
+
+const mqttSetup = async() =>{
+
+    try{
+        //mqtt client
+        const client  = await mqtt.connect("mqtt://test.mosquitto.org",{clientId:"mqttjs02"});
+        //if successful
+        console.log('Connected to MQTT Broker')
+
+        mqttInit(client);
+        //send app access to routes.js
+        routes(app, client); 
+    }
+    catch (err){
+        throw new Error('Failed to Connect to MQTT Broker')
+    }
+    
+}
+
+init();
 
