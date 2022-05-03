@@ -71,7 +71,7 @@ void loop() {
 
    // Use WiFiClient class to create TCP connections
     const uint16_t port = 8888;          // port to use
-    const char * host = "192.168.43.251"; // address of server
+    const char * host = "192.168.43.86"; // address of server
 
  
   // call poll() regularly to allow the library to send MQTT keep alive which

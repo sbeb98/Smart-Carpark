@@ -30,7 +30,6 @@ async function mqttPacketProcess(message){
     try{
         let Park = await databaseFunctions.ParkData.find().exec();  //TODO: MAKE THIS SYNCHRONOUS/AWAIT
 
-        console.log();
         //use regex to seperate message into spotname + data
         let messageArray = message.split(" ");
 
@@ -49,7 +48,7 @@ async function mqttPacketProcess(message){
             totalPastTime= timePastRecieved.getMinutes() + timePastRecieved.getSeconds()/60;
             interval = (timeRecieved.getMinutes() + timeRecieved.getSeconds()/60)  - totalPastTime; 
 
-            console.log(interval)
+            //console.log(interval)
         }
          //if a new hour entered
          if (interval <0) {

@@ -1,12 +1,13 @@
+
 #include <ESP8266WiFi.h>
 
+String serialData = "";
+bool ledFlag= true;
 
 const char* ssid     = "Sebs phone";//"Telstra8A0916-2"; // The SSID (name) of the Wi-Fi network you want to connect to
 const char* password = "dragonite";//"zmzueffzyj";//     // The password of the Wi-Fi network
 
 WiFiClient wifiClient;
-
-
 
 void setup()
 {
@@ -14,35 +15,48 @@ void setup()
   delay(10);
   Serial.println('\n');
   while(!Serial){};     //wait until serial connection
-  
-  
+
   Serial.begin(115200); // // Serial Communication is starting with 9600 of baudrate speed
   Serial.println("Ultrasonic Sensor HC-SR04 Transmit via MQTT"); // print some text in Serial Monitor
   Serial.println("with ESP8266");  
-
-  WiFi.begin(ssid, password);             // Connect to the network
-  Serial.print("Connecting to ");
-  Serial.print(ssid); Serial.println(" ...");
 
   int i = 0;
   while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
     delay(1000);
     Serial.print(++i); Serial.print(' ');
-  }
+   }
 
   Serial.println('\n');
   Serial.println("Connection established!");  
   Serial.print("IP address:\t");
   Serial.println(WiFi.localIP());         // Send the IP address of the ESP8266 to the computer
-
-//  pinMode(D1, OUTPUT);
-//
-//  digitalWrite(D1, LOW);
-
 }
 
-void loop() {
-    const uint16_t port = 8888;          // port to use
+void loop(void)
+{
+	while (Serial.available())
+	{
+		char x = Serial.read();
+		if (x == '\r')
+			continue;
+		serialData += x;
+	}
+
+ if(ledFlag){
+  Serial.print("[LEDOFF]");
+  ledFlag= false;
+ }
+  
+ else{
+  Serial.print("[LEDON]");
+  ledFlag= true; 
+ }
+ 
+    
+
+ 
+
+   const uint16_t port = 8888;          // port to use
     const char * host = "192.168.43.48"; // address of server
     String msg ="";
 
@@ -70,17 +84,4 @@ void loop() {
 
     Serial.println(msg);   
     Serial.println();
-//  
-//
-////    if (msg.length()){
-//      digitalWrite(D1, HIGH);   // turn the LED on (HIGH is the voltage level)
-//      Serial.println(analogRead(A0));
-//    //}
-    
-  //msg="";
-
-//  delay(2000);
-//  digitalWrite(D1, LOW);    // turn the LED off by making the voltage LOW
-//  Serial.println(analogRead(A0));
-  delay(2000);
 }
