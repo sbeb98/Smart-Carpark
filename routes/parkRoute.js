@@ -1,62 +1,67 @@
-const databaseFunctions = require('../database/parkData');
-const PastDatabaseFunctions = require('../database/pastParkData');
+const { ParkData } = require('../database/parkData');
+const { PastParkData } = require('../database/pastParkData');
 const { BookData } = require('../database/bookingData');
 const bookHandleFunc= require('../Booking/bookHandle');
 const {mqttSend} = require('../mqtt/mqtt_test')
+//constant to use:
+
+let time = [""];
+let i;
+for(i=0;i<32; ++i){
+
+    let str = String(Math.trunc((i+16)/2)).padStart(2,'0');
+
+    if(i%2){
+        time[i]= str + '30';
+    }
+    else {
+        time[i]= str + '00' 
+    }
+}
+
 
 
 //for future declarations 
 
 const routes = (app, client) =>{ 
     app.route('/')
-        .get((req, res)=>{
-            databaseFunctions.ParkData.find()
-            .then(Park =>{
-                res.render('index', {Park})
-            })
-            .catch(e =>{
-                console.error(e);
-            })
-        })
-            
+        .get(async(req, res)=>{
+            try{
+                //find all data to display
+                const Park = await ParkData.find();
+                //display data
+                res.render('index', {Park});
 
-//insert other operations at this address
+                //if error
+            }catch (err){
+                console.error(err)
+                res.send('Park Spots could not be loaded. Please Try Again.')
+            }
+        })
 
 
     app.route('/trend')
-                .get((req,res)=>{
-                    PastDatabaseFunctions.PastParkData.find()
-                    .then(trendPark =>{
-                        res.render('trend', {trendPark})
-                    })
-                    .catch((err)=>{
-                    console.error(err)
-                })
-                    })
+        .get(async(req,res)=>{
+            try{
+                //get data to display
+               const trendPark= await PastParkData.find()
+               //display data
+                res.render('trend', {trendPark});
+
+            }catch (err){
+            console.error(err)
+            }
+        })
     
     app.route('/book')
-                .get((req, res)=>{
-                
-                    let time = [""];
-                    let i;
-                    for(i=0;i<32; ++i){
+        .get((req, res)=>{
+            //time object already created
+            res.render('book',{time})
+        })
+        .post((req, res)=>{
 
-                        let str = String(Math.trunc((i+16)/2)).padStart(2,'0');
-
-                        if(i%2){
-                            time[i]= str + '30';
-                        }
-                        else {
-                            time[i]= str + '00' 
-                        }
-
-                    }
-                    res.render('book',{time})
-                })
-                .post((req, res)=>{
-
-                    let bookingData = req.body;
-                    console.log(bookingData);
+            let bookingData = req.body;
+            console.log(bookingData);
 
                     
 //TODO: what if booking made within 15mins of current time

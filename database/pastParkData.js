@@ -3,35 +3,36 @@ var PastParkData = require('./pastParkDataModel');
 
 //FUNCTION: function to call other intialisation functions
 async function initPastParkDatabase (){
-
-    await ClearDatabase();
-    await createTrendDatabase(20);
-    console.log('Database 2 Initialised!!')
-}
-//FUNCTION: removes all enteries from current database, 
-async function ClearDatabase() {
     try{
-        await PastParkData.deleteMany({})
+        //clear database
+        await PastParkData.deleteMany({});
+        //fill database with random data
+        const pArray = await createTrendDatabase(20);
+        await Promise.all(pArray.map(p => p.save()));
+        console.log('Database 2 Initialised!!')
+
+    } catch (err){
+        console.error('Database 2 could not be initalised :(')
     }
-    catch(err){
-        throw new Error('Database not deleted');
-    }
+    
 }
 
 function createTrendDatabase(numSpots){
 
     let i; 
+    let pArray= [""];
 
     for(i=1;i<=numSpots;i++)
     {
         //Choose the name in the form 'Park001'
         let name = 'Park0' + String(i).padStart(2,'0');
-        createPastParkDocument(name); 
+        pArray[i-1]= createPastParkDocument(name); 
     }
+    return pArray;
 }
 //FUNCTION: creates a single database entry in past database
 
-async function createPastParkDocument (name){
+function createPastParkDocument (name){
 
     try{
 
@@ -50,8 +51,8 @@ async function createPastParkDocument (name){
                     Parkdocco['Day' + daysCount + 'Hour' + hoursCount] = Math.floor(Math.random()*100);
                 }
             }
-    
-        await Parkdocco.save();
+
+        return Parkdocco;
 
     }
     catch (err){

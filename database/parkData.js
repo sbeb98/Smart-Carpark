@@ -24,21 +24,17 @@ let ParkData = mongoose.model('ParkCol', ParkSchema);
 
 //FUNCTION: function to call other intialisation functions
 async function initParkDatabase (){
-
-    await ClearDatabase();
-    const pArray = createRealTimeDatabase(20); 
-    await Promise.all(pArray.map(doc => doc.save()));
-    console.log('Database 1 Initialised!!');   
-}
-
-//FUNCTION: removes all enteries from current database, 
- function ClearDatabase() {
     try{
-        ParkData.deleteMany({});
+        //clear database
+        await ParkData.deleteMany({});
+        //add new random data
+        const pArray =  createRealTimeDatabase(20); 
+        await Promise.all(pArray.map(doc => doc.save()));
+        console.log('Database 1 Initialised!!'); 
+    } catch (e){
+        console.error('Database 1 could not be initialised')
     }
-    catch(err){
-        throw new Error('Database 1 not Cleared');
-    }
+     
 }
 
 //FUNCTION: creates entries for all 20 carspots in the carpark
@@ -65,20 +61,15 @@ function createRealTimeDatabase (numOfDocs){
 //FUNCTION: creates a single database entry in real time database
 
 function createParkDocument (name, occupied_input, percentage_input){
-    try {
 
-        const Parkdocco = new ParkData(
-            {
-                SpaceNum: name, 
-                Occupied: occupied_input,
-                Percentage: percentage_input
-            });
+    const Parkdocco = new ParkData(
+        {
+            SpaceNum: name, 
+            Occupied: occupied_input,
+            Percentage: percentage_input
+        });
 
-    return Parkdocco;
-    }
-    catch(err){
-        throw new Error('Error Saving new Document');
-    }
+return Parkdocco;
 
 }
 

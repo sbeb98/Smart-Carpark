@@ -1,13 +1,15 @@
 //declarations
-var express = require('express');
-var routes = require('./routes/parkRoute');
+const express = require('express');
+const routes = require('./routes/parkRoute');
 const mqtt = require('mqtt'); 
-var mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const {mqttInit} = require('./mqtt/mqtt_test');
 const {initParkDatabase} = require('./database/parkData');
 const {initPastParkDatabase} = require('./database/pastParkData');
 const {ClearBookDatabase} = require('./database/bookingData')
 const bodyparser = require('body-parser');
+const pug =require('pug');
+
 
 //setup
 const app = express();
