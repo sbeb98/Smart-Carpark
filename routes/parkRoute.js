@@ -84,7 +84,7 @@ const routes = (app, client) =>{
 
                 console.log('Creating booking')
                 //create booking and store in database
-                const bookDocco = await bookHandleFunc.addBooking(bookingData.dayDropdown, results[1].startHours,
+                let bookDocco = await bookHandleFunc.addBooking(bookingData.dayDropdown, results[1].startHours,
                                 results[1].endHours, results[1].bin)
                 bookDocco.save().catch(e => { throw new Error('Booking Not Saved to Database')});
                         
@@ -96,13 +96,16 @@ const routes = (app, client) =>{
                 console.log('timer 1 ended')
 
                 //wait for next update from field
-                await waitForNextUpdate();
+                //await waitForNextUpdate();
+                //ideally instead of this the mcu connected to the motor
+                //is the same as the sensor mcu. This could check if space is free
+                //before implementation and stop implementation
 
                 //check if a space is free
-                let docDetails = await checkForSpace();
+                let docDetails = await checkForSpace(bookDocco);
 
                 //send command to rasp to raise bollard
-                mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Raise');
+                mqttSend(client, docDetails.id + ' ' +  docDetails.name + ' Raise');
                 //wait 20 seconds and check if a reply came
                 await delay(20000);
                 //check if reply was placed in database for this parking spot (update bookDocco)
@@ -118,11 +121,11 @@ const routes = (app, client) =>{
                         parkDoc.Booked = false;
                         parkDoc.save();
 
-                        await waitForNextUpdate();
-                        docDetails = await checkForSpace();
+                        //await waitForNextUpdate();
+                        docDetails = await checkForSpace(bookDocco);
                     }
                     //resend message with new (or old data)
-                     mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Raise');
+                     mqttSend(client, docDetails.id + ' ' +  docDetails.name+ ' Raise');
                     //wait 20 seconds 
                      await delay(5000);
                      //check to exit
@@ -136,7 +139,7 @@ const routes = (app, client) =>{
                 
                 //when timer finished, send LOWER command to rapb
                 console.log('timer 2 ended')
-                mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Lower');
+                mqttSend(client, docDetails.id + ' ' +  docDetails.name+ ' Lower');
 
                 //wait 20 seconds
                 await delay(5000);
@@ -144,7 +147,7 @@ const routes = (app, client) =>{
                 bookDocco = await BookData.findById(docDetails.id);
                 while (!bookDocco.Acknowledged){
                     //resend message
-                    mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Raise');
+                    mqttSend(client, docDetails.id + ' ' +  docDetails.name+ ' Lower');
                     //wait 20 seconds 
                      await delay(20000);
                      //check to exit
@@ -170,15 +173,15 @@ const routes = (app, client) =>{
 
 
 }
-async function checkForSpace(){
-    return new Promise((Resolve, Reject) => {
+function checkForSpace(bookDocco){
+    return new Promise(async(Resolve, Reject) => {
 
         query = {Occupied : false, Booked : false};
         let update = {Booked : true}
         //TODO what if no spaces are free
         //set park to booked status-- assume that no other thread can access this database once found
         let parkFound = await ParkData.findOneAndUpdate(query,update, {new : true}).exec().catch(e =>{throw new Error('No Free Spots Found')});
-        
+
         //update Booking database so it includes the correct database
         bookDocco.SpaceNum =parkFound.SpaceNum;
         bookDocco.save();

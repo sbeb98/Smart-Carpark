@@ -39,6 +39,8 @@ async function mqttPacketProcess(message){
     try{
         let Park = await databaseFunctions.ParkData.find().exec();  //TODO: MAKE THIS SYNCHRONOUS/AWAIT
 
+        console.log(Park[0].SpaceNum);
+
         //use regex to seperate message into spotname + data
         let messageArray = message.split(" ");
 
@@ -74,10 +76,8 @@ async function mqttPacketProcess(message){
             let distance = messageArray[i].slice(8);//Park001-xxx
         
 
-            //find correct parkSpot
-            // TODO: Test if this works, else use:
-            //let currentIndex = Park.map(function(e) {return e.SpaceNum}).indexOf(name);
-            let currentIndex = Park.SpaceNum.indexOf(name);
+            //find correct parkSpot, makes new array of spacenames and finds the correct index
+            let currentIndex = Park.map(function(e) {return e.SpaceNum}).indexOf(name);
 
             //calculate new percentage
             let pastTimeOccupied = totalPastTime*Park[currentIndex].Percentage/100;
@@ -118,12 +118,13 @@ async function mqttPacketProcess(message){
 }
 
 //function to process ack messages
-function mqttAckRecieve(message){
+async function mqttAckRecieve(message){
 
     //seperate message into id, park spot and command
     let messageArray = message.split(" ");
     let update = {Acknowledged : true}
-    BookData.findByIdAndUpdate(messageArray[0], update);
+    const test = await BookData.findByIdAndUpdate(messageArray[0], update, {new : true}).exec().catch(e =>{console.error('Not Changed to Ack')});
+    console.log('Ack:' + test.Acknowledged);
 }
 
 //function to send commands to raspberry pi
