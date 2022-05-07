@@ -10,6 +10,9 @@ const ParkSchema = new Schema ({
         type: Boolean, 
         
     },
+    Booked:{
+        type: Boolean,
+    }, 
     Percentage:{
         type: Number,
     },
@@ -66,6 +69,7 @@ function createParkDocument (name, occupied_input, percentage_input){
         {
             SpaceNum: name, 
             Occupied: occupied_input,
+            Booked: false,
             Percentage: percentage_input
         });
 

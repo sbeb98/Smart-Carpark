@@ -2,23 +2,33 @@
 //then make a function to call on and send data
 
 var mqtt = require('mqtt');
+const { BookData } = require('../database/bookingData');
 const ParkData = require('../database/parkData');
 const databaseFunctions = require('../database/parkData');
 const PastDatabaseFunctions = require('../database/pastParkData');
 
 let timePastRecieved; 
 
+//let interval = 5; 
+
 //initialise mqtt  
 function mqttInit (client) {
     //subscribe to topic
-    client.subscribe("starto/attempt");
-    // client.subscribe("SACapstone/Booking");
+    client.subscribe("SACapstone/ParkData");
+    client.subscribe("SACapstone/Booking/Ack");
     // client.publish("SACapstone/Booking", 'hello');
     client.on('message', function(topic, message, packet){
 
+        //convert to string from hex object
         message = message + ' '
         console.log(message);
-        mqttPacketProcess(message);
+        if(topic === "SACapstone/ParkData")
+            mqttPacketProcess(message);
+        else if(topic === "SACapstone/Booking/Ack")
+            mqttAckRecieve(message);
+        else
+            console.log('Message Topic not Found')
+        
     });    
 }
 
@@ -54,10 +64,6 @@ async function mqttPacketProcess(message){
             interval*=-1; 
 
             newHourFlag = true; 
-
-            //do some stuff related to the pastPark database
-            //shift all data down
-            //record latest data into latest spot 
         }
 
         //loop through and store data into custom class
@@ -69,7 +75,9 @@ async function mqttPacketProcess(message){
         
 
             //find correct parkSpot
-            let currentIndex = Park.map(function(e) {return e.SpaceNum}).indexOf(name);
+            // TODO: Test if this works, else use:
+            //let currentIndex = Park.map(function(e) {return e.SpaceNum}).indexOf(name);
+            let currentIndex = Park.SpaceNum.indexOf(name);
 
             //calculate new percentage
             let pastTimeOccupied = totalPastTime*Park[currentIndex].Percentage/100;
@@ -86,11 +94,9 @@ async function mqttPacketProcess(message){
                 newTimeOccupied =0; 
             }  
 
-            //console.log(currentIndex + ' ' + newTimeOccupied + ' ' + pastTimeOccupied + ' ' + totalPastTime);
-
             let percentage_input= 100*(newTimeOccupied + pastTimeOccupied)/(interval + totalPastTime); 
 
-            //amenga current document
+            //amend current document
             databaseFunctions.appendPark(Park[currentIndex].SpaceNum, occupied_input, percentage_input);
 
 
@@ -109,6 +115,15 @@ async function mqttPacketProcess(message){
     }
 
     
+}
+
+//function to process ack messages
+function mqttAckRecieve(message){
+
+    //seperate message into id, park spot and command
+    let messageArray = message.split(" ");
+    let update = {Acknowledged : true}
+    BookData.findByIdAndUpdate(messageArray[0], update);
 }
 
 //function to send commands to raspberry pi

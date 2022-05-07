@@ -58,73 +58,143 @@ const routes = (app, client) =>{
             //time object already created
             res.render('book',{time})
         })
-        .post((req, res)=>{
+        .post(async(req, res)=>{
 
             let bookingData = req.body;
-            console.log(bookingData);
+            console.log('hello');
 
-                    
-//TODO: what if booking made within 15mins of current time
-                    if (bookingData.hourStartDropdown >= bookingData.hourEndDropdown){
-                        res.send("ERROR: Booking must end after it begins")
-                    }
-                        
-                    else{
+            try{
 
-                    let query = {Day: bookingData.dayDropdown}
-                    Promise.all([BookData.find(query).exec(), bookHandleFunc.createBin(bookingData)])
-                        .then(results =>{
-                           return bookHandleFunc.checkBookingAvailable(results);
+                                    
+                //TODO: what if booking made withithin 15mins of current time``
 
-                        })
-                        .then(results =>{
+                if (bookingData.hourStartDropdown >= bookingData.hourEndDropdown){
+                    throw new Error("ERROR: Booking must end after it begins")
+                }
+                
+                
+        
+                //fetch other booking data and determine if space is available
+                let query = {Day: bookingData.dayDropdown}
+                const results= await Promise.all([BookData.find(query).exec(), bookHandleFunc.createBin(bookingData)])
+               
+                await bookHandleFunc.checkBookingAvailable(results);
+                //if available send success message
+                res.send("Your Booking has been made");
 
-                            res.send("Your Booking has been made")
-                            const bookDocco = bookHandleFunc.addBooking(bookingData.dayDropdown, results[1].startHours,
+                console.log('Creating booking')
+                //create booking and store in database
+                const bookDocco = await bookHandleFunc.addBooking(bookingData.dayDropdown, results[1].startHours,
                                 results[1].endHours, results[1].bin)
-
-                            return bookDocco.save();
-                            
-                        }, () => { handleError(res, 'No Booking Available')})
-                        .then(doc => {
-                            let timerLength = bookHandleFunc.findTimerLength(doc);
-                            let dataToPass = {timerLength : timerLength, id : doc.id}
-                            //Set timer for 15 mins before booking with callback (lock spot)
-                            return delay(3000, dataToPass)  //(timerLength-0.25)*60*60*1000
-                            
-                        }, () => {handleError(res,'Booking Not Saved to Database')})  
-                        .then(dataToPass => {
-                            //function to check if space free TODO
-                            //send command to rasp to raise bollard
-                            console.log('timer 1 ended')
-                            console.log('reach')
-                            mqttSend(client, 'Raise');
-
-                            return delay(4000, dataToPass.id) //(dataToPass.timerLength)*60*60*1000
-                        })
-                        .then(id =>{
-
-                            console.log('timer 2 ended')
-                            mqttSend(client, 'Lower');
-
-
-                            let query = {_id : id};
-                            return BookData.deleteOne(query).exec();
-                       })
-                       .then(()=>{
-                           console.log('Booking Deleted');
-                       })
+                bookDocco.save().catch(e => { throw new Error('Booking Not Saved to Database')});
                         
-                        .catch(err =>{
-                            console.log('promise ended')
-                        })
-                            
+                //find timer length
+                let timerLength = bookHandleFunc.findTimerLength(bookDocco)
+                
+                //Set timer for 15 mins before booking with callback (lock spot)        
+                await delay(3000)  //(timerLength-0.25)*60*60*1000
+                console.log('timer 1 ended')
 
+                //wait for next update from field
+                await waitForNextUpdate();
+
+                //check if a space is free
+                let docDetails = await checkForSpace();
+
+                //send command to rasp to raise bollard
+                mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Raise');
+                //wait 20 seconds and check if a reply came
+                await delay(20000);
+                //check if reply was placed in database for this parking spot (update bookDocco)
+                bookDocco = await BookData.findById(docDetails.id);
+                while (!bookDocco.Acknowledged)
+                {
+                    //if space still free, resend message
+                    query = {SpaceNum : docDetails.name}
+                    let parkDoc = await ParkData.findOne(query);
+
+                    //if space not free change entry from booked and find new space
+                    if(!parkDoc.Occupied){
+                        parkDoc.Booked = false;
+                        parkDoc.save();
+
+                        await waitForNextUpdate();
+                        docDetails = await checkForSpace();
                     }
+                    //resend message with new (or old data)
+                     mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Raise');
+                    //wait 20 seconds 
+                     await delay(5000);
+                     //check to exit
+                     bookDocco = await BookData.findById(docDetails.id);
 
-                    
-                })
-    }
+                }
+
+                //wait 15 minutes and reset ackflag
+                bookDocco.Acknowledged= false;
+                await Promise.all([delay(10000)], bookDocco.save()) //15mins, 
+                
+                //when timer finished, send LOWER command to rapb
+                console.log('timer 2 ended')
+                mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Lower');
+
+                //wait 20 seconds
+                await delay(5000);
+                //check if ack recieved
+                bookDocco = await BookData.findById(docDetails.id);
+                while (!bookDocco.Acknowledged){
+                    //resend message
+                    mqttSend(client, docDetails.id + ' ' + + docDetails.name+ ' Raise');
+                    //wait 20 seconds 
+                     await delay(20000);
+                     //check to exit
+                     bookDocco = await BookData.findById(docDetails.id);
+                }
+
+    
+                //delete booking from database
+                query = {_id : bookDocco.id};
+                await BookData.deleteOne(query).exec().catch((e) => { throw new Error('Booking not deleted from database')});;
+                console.log('Booking Deleted')
+
+
+            } catch(err){
+                console.error(err.message)
+                res.send(err.message)
+            }
+
+                        
+    
+                
+        })
+
+
+}
+async function checkForSpace(){
+    return new Promise((Resolve, Reject) => {
+
+        query = {Occupied : false, Booked : false};
+        let update = {Booked : true}
+        //TODO what if no spaces are free
+        //set park to booked status-- assume that no other thread can access this database once found
+        let parkFound = await ParkData.findOneAndUpdate(query,update, {new : true}).exec().catch(e =>{throw new Error('No Free Spots Found')});
+        
+        //update Booking database so it includes the correct database
+        bookDocco.SpaceNum =parkFound.SpaceNum;
+        bookDocco.save();
+
+        Resolve({id : bookDocco._id, name : bookDocco.SpaceNum });
+
+    })
+} 
+            
+function waitForNextUpdate(){
+    return new Promise((Resolve, Reject) =>{
+        const parkDataEmitter = ParkData.watch();
+
+        parkDataEmitter.once('change', change => Resolve())
+    })
+}    
 
 function handleError(res, err){
     console.error(err)
@@ -132,12 +202,12 @@ function handleError(res, err){
     throw err;
 }
 
-function delay(milliseconds, dataToPass) {
+function delay(milliseconds) {
 
     return new Promise(function(resolve) { 
 
         setTimeout(() =>{            
-            return resolve(dataToPass)
+            return resolve()
         }, milliseconds)
     })
 }

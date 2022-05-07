@@ -62,23 +62,25 @@ function createPastParkDocument (name){
         
 }
 
-const getAllPastPark = (req, res) =>{
-    let query = PastParkData.find({});
-    return query;
-}
 
 
 
-function appendPastDocument(Spotname, newPercentage){
+async function appendPastDocument(Spotname, newPercentage){
 
     const query =  {SpotNum: Spotname};
-    PastParkData.findOne(query).exec()
-    .then(PastPark =>{
-        //trendPark[dataNum][dayHourStr];
+    try{
+
+        //find this database entry to append
+        let PastPark = await PastParkData.findOne(query).exec().catch(e=>{throw new Error('PastParkData could not be found')})
 
         let dayIndex, hourIndex;
 
+        //loop through each day/hour and shift each entry up 
+        //note there is no day/hour 0
         for(dayIndex= 14; dayIndex>0; --dayIndex){
+
+            
+
 
             for(hourIndex =23; hourIndex>0; --hourIndex){
 
@@ -86,25 +88,34 @@ function appendPastDocument(Spotname, newPercentage){
                 let newdayHourStr= 'Day'+ String(dayIndex) + 'Hour' + String(hourIndex);
 
                 PastPark[dayHourStr] = PastPark[newdayHourStr];
+                //day14H1: 14H2 = 14H1
+                //day13H24: 14H1 = 13H24 ---below
+                //day13H23: 13H24 = 13H23
+                
+            }
+
+            if (dayIndex !== 1){
+                
+            let dayHourStr= 'Day'+ String(dayIndex) + 'Hour' + String(1);
+            let newdayHourStr= 'Day'+ String(dayIndex-1) + 'Hour' + String(24);
+
+            PastPark[dayHourStr] = PastPark[newdayHourStr];
+
             }
 
         }
 
         PastPark.Day1Hour1 = newPercentage; 
 
-        return PastPark;
-    })
-    .then(PastPark =>{
         PastPark.save();
-    })
-    .catch((err)=>{
+
+    } catch(err){
         console.error(err);
-    })
+    }
 }
 
 const PastDatabaseFunctions= {
-    initPastParkDatabase: initPastParkDatabase, 
-    getAllPastPark : getAllPastPark,
+    initPastParkDatabase: initPastParkDatabase,
     appendPastDocument : appendPastDocument,
     PastParkData : PastParkData
 };

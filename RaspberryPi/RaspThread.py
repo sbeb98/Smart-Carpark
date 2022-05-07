@@ -38,8 +38,8 @@ def multi_threaded_client(connection):
                 message= fillMessage(i, message)
                 i+= 1
             #send message to server
-            client.publish("starto/attempt", message)
-            connection.sendall(data.encode('ASCII'))
+            client.publish("SACapstone/ParkData", message)
+            #connection.sendall(data.encode('ASCII'))
            # print( "Just Published " + message + " to server")
 
         connection.close()
@@ -50,6 +50,10 @@ def on_message(client, userdata, message):
     data = str(message.payload.decode("ASCII"));    
     print("Message Recieved, Topic: " + message.topic)
     print("Message Recieved, Message: " + data)
+
+    #re-send ack message back to server
+    client.publish("SACapstone/Booking/Ack", message + ' Ack')
+
 
     #set flag dependant on message
     global motorFlag, motorCommand

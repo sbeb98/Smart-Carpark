@@ -27,7 +27,6 @@ async function createBin(bookingData){
     {
        bin = bin<<1;
     }
-    console.log('Start Point = ' + startPoint + ' NO Points = ' + noPoints + ' result= ' + bin);
     return {bin : bin, startHours: (startHours + startMin), endHours : (endHours + endMin)}
 }
 //function to add booking into database
@@ -40,7 +39,7 @@ function addBooking(day, startTime, endTime, binary){
             TimeEnd: endTime,
             DataBinPoints: binary
         });
-
+        console.log('This one')
         console.log(bookDocco);
 
         return bookDocco;
@@ -56,7 +55,8 @@ function checkBookingAvailable (results){
             if(test){
                 ++overlapCount;
                 if (overlapCount>=2){
-                    reject();
+                        throw new Error('Booking Unavailable');
+                    
                 }
             }
 
