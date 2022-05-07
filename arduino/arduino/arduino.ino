@@ -8,16 +8,15 @@
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
 
+//set interval for sending messages (milliseconds)
+  const long interval = 5000;
+
 const char* ssid     = "Sebs phone";// "Telstra8A0916-2";// The SSID (name) of the Wi-Fi network you want to connect to
 const char* password = "dragonite";//"zmzueffzyj";//;//     // The password of the Wi-Fi network
 
 WiFiClient wifiClient;
 WiFiClient client;
-MqttClient mqttClient(wifiClient);
-
-const char broker[] = "test.mosquitto.org";
 int        port     = 1883;
-const char topic[]  = "SACapstone/Booking";
 
  unsigned long currentMillis = 0;
  unsigned long previousMillis = 0;
@@ -35,7 +34,6 @@ void setup()
   
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
-  Serial.begin(115200); // // Serial Communication is starting with 9600 of baudrate speed
   //Serial.println("Ultrasonic Sensor HC-SR04 Transmit via MQTT"); // print some text in Serial Monitor
   //Serial.println("with ESP8266");  
 
@@ -54,44 +52,36 @@ void setup()
   Serial.print("IP address:\t");
   Serial.println(WiFi.localIP());         // Send the IP address of the ESP8266 to the computer
 
-   Serial.print("Attempting to connect to the MQTT broker: ");
-   Serial.println(broker);
-
-  if (!mqttClient.connect(broker, port)) {
-    Serial.print("MQTT connection failed! Error code = ");
-    Serial.println(mqttClient.connectError());
-
-    while (1);
-  }  
-
-  Serial.println("You're connected to the MQTT broker!");
-  Serial.println();
 }
 void loop() {
 
    // Use WiFiClient class to create TCP connections
     const uint16_t port = 8888;          // port to use
     const char * host = "192.168.43.86"; // address of server
-
- 
-  // call poll() regularly to allow the library to send MQTT keep alive which
-  // avoids being disconnected by the broker
-  mqttClient.poll();
   
   //set interval for sending messages (milliseconds)
-  const long interval = 5000;
+  const long interval = 30000;
   currentMillis = millis();
   
   //does nothing if interval time not reached
   if (currentMillis - previousMillis >= interval) {
 
        if (!client.connect(host, port)) {
-        Serial.println("connection failed");
-        Serial.println("wait 5 sec...");
-        delay(5000);
-    } 
+          Serial.println("connection failed");
+          Serial.println("wait 5 sec...");
+          delay(5000);
+       }
+       else{
+          Serial.println("Connection Successful!!! Finding Distance....");
+          runLoop(); 
+       }
+  }
+  
+}
 
-    //Sends and Recieves Distance Data from sensor
+void runLoop(){
+
+  //Sends and Recieves Distance Data from sensor
     // Clears the trigPin condition
     digitalWrite(trigPin, LOW);
     delayMicroseconds(2);
@@ -103,41 +93,6 @@ void loop() {
     duration = pulseIn(echoPin, HIGH);
     // Calculating the distance
     distance = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
-
-  
-    Serial.print("Sending message to topic: ");
-    Serial.println(topic);
-    Serial.print("Raise");
-    Serial.println( " cm");
-
-
-/*
-    Serial.print("Sending message to topic: ");
-    Serial.println(topic2);
-    Serial.println(Rvalue2);
-
-    Serial.print("Sending message to topic: ");
-    Serial.println(topic2);
-    Serial.println(Rvalue3);
-
-    */
-
-    // send message, the Print interface can be used to set the message contents
-    mqttClient.beginMessage(topic);
-    mqttClient.print("Raise");
-    mqttClient.endMessage();
-
-    /*
-
-    mqttClient.beginMessage(topic2);
-    mqttClient.print(Rvalue2);
-    mqttClient.endMessage();
-
-    mqttClient.beginMessage(topic3);
-    mqttClient.print(Rvalue3);
-    mqttClient.endMessage();
-
-    */
 
     client.print(distance);
     Serial.print("Sent : ");
@@ -157,6 +112,5 @@ void loop() {
     Serial.println();
     // save the last time a message was sent
     previousMillis = currentMillis;
-  }
   
 }

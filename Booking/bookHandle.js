@@ -37,7 +37,8 @@ function addBooking(day, startTime, endTime, binary){
             Day: day, 
             TimeStart: startTime,
             TimeEnd: endTime,
-            DataBinPoints: binary
+            DataBinPoints: binary, 
+            Acknowledged: false
         });
         console.log('This one')
         console.log(bookDocco);
