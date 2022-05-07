@@ -1,6 +1,6 @@
 import socket
 import os
-from _thread import *
+from thread import *
 import paho.mqtt.client as mqtt
 from random import randint
 
@@ -40,7 +40,7 @@ def multi_threaded_client(connection):
             #send message to server
             client.publish("SACapstone/ParkData", message)
             #connection.sendall(data.encode('ASCII'))
-           # print( "Just Published " + message + " to server")
+            print( "Just Published " + message + " to server")
 
         connection.close()
 
@@ -52,7 +52,8 @@ def on_message(client, userdata, message):
     print("Message Recieved, Message: " + data)
 
     #re-send ack message back to server
-    client.publish("SACapstone/Booking/Ack", message + ' Ack')
+    print("Sending Acknowledgement");
+    client.publish("SACapstone/Booking/Ack", data + ' Ack')
 
 
     #set flag dependant on message
