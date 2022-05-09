@@ -9,6 +9,7 @@ const {initPastParkDatabase} = require('./database/pastParkData');
 const {ClearBookDatabase} = require('./database/bookingData')
 const bodyparser = require('body-parser');
 const pug =require('pug');
+const { initialiseTrendDatabase } = require('./database/trendDatabase');
 
 
 //setup
@@ -29,6 +30,8 @@ const init = async () =>{
     await Promise.all([connectToMongoose()], [mqttSetup()])
     //initalise databases
     await Promise.all([initParkDatabase()], [initPastParkDatabase()], [ClearBookDatabase()])
+    //THEN: average data into trend database
+    await initialiseTrendDatabase();
     //THEN: start server
     //server setup
     await app.listen(PORT);

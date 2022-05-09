@@ -21,7 +21,7 @@ function mqttInit (client) {
 
         //convert to string from hex object
         message = message + ' '
-        console.log(message);
+        console.log('message recieved: ' + message);
         if(topic === "SACapstone/ParkData")
             mqttPacketProcess(message);
         else if(topic === "SACapstone/Booking/Ack")
@@ -38,8 +38,6 @@ async function mqttPacketProcess(message){
         //get all current Park Data
     try{
         let Park = await databaseFunctions.ParkData.find().exec();  //TODO: MAKE THIS SYNCHRONOUS/AWAIT
-
-        console.log(Park[0].SpaceNum);
 
         //use regex to seperate message into spotname + data
         let messageArray = message.split(" ");

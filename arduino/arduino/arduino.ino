@@ -4,12 +4,16 @@
 #define echoPin D6 // attach pin D1 Arduino to pin Echo of HC-SR04
 #define trigPin D5 //attach pin D2 Arduino to pin Trig of HC-SR04
 
+#define raisePin D7
+#define lowerPin D8
+
 // defines variables
 long duration; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
 
 //set interval for sending messages (milliseconds)
-  const long interval = 5000;
+  const long intervalDistance = 5000;
+  const long intervalMotor = 1000;
 
 const char* ssid     = "Sebs phone";// "Telstra8A0916-2";// The SSID (name) of the Wi-Fi network you want to connect to
 const char* password = "dragonite";//"zmzueffzyj";//;//     // The password of the Wi-Fi network
@@ -18,8 +22,11 @@ WiFiClient wifiClient;
 WiFiClient client;
 int        port     = 1883;
 
- unsigned long currentMillis = 0;
- unsigned long previousMillis = 0;
+ unsigned long currentMillisDistance = 0;
+ unsigned long previousMillisDistance = 0;
+
+ unsigned long currentMillisMotor = 0;
+ unsigned long previousMillisMotor = 0;
 /*
 const char topic2[]  = "real_unique_topic_2";
 const char topic3[]  = "real_unique_topic_3";
@@ -34,9 +41,13 @@ void setup()
   
   pinMode(trigPin, OUTPUT); // Sets the trigPin as an OUTPUT
   pinMode(echoPin, INPUT); // Sets the echoPin as an INPUT
-  //Serial.println("Ultrasonic Sensor HC-SR04 Transmit via MQTT"); // print some text in Serial Monitor
-  //Serial.println("with ESP8266");  
 
+  pinMode(raisePin, OUTPUT);
+  pinMode(lowerPin, OUTPUT);
+
+  digitalWrite(raisePin, HIGH);
+  digitalWrite(lowerPin, HIGH);
+  
   WiFi.begin(ssid, password);             // Connect to the network
   Serial.print("Connecting to ");
   Serial.print(ssid); Serial.println(" ...");
@@ -61,21 +72,37 @@ void loop() {
   
   //set interval for sending messages (milliseconds)
   const long interval = 30000;
-  currentMillis = millis();
+  currentMillisDistance = millis();
+  currentMillisMotor = millis();
   
   //does nothing if interval time not reached
-  if (currentMillis - previousMillis >= interval) {
+  if (currentMillisDistance - previousMillisDistance >= intervalDistance) {
 
        if (!client.connect(host, port)) {
           Serial.println("connection failed");
-          Serial.println("wait 5 sec...");
-          delay(5000);
        }
        else{
           Serial.println("Connection Successful!!! Finding Distance....");
           runLoop(); 
        }
   }
+
+  //does nothing if interval time not reached
+  if (currentMillisMotor - previousMillisMotor >= intervalMotor) {
+    
+     if (!client.connect(host, port)) {
+        Serial.println("connection failed");
+     }
+     else{
+        Serial.println("Connection Successful!!! Polling Command....");
+        client.print("Motor");
+        delay(500);
+        checkForCommand();
+    }
+
+  }
+
+
   
 }
 
@@ -98,19 +125,37 @@ void runLoop(){
     Serial.print("Sent : ");
     Serial.println(distance);
 
-    delay(500);
-    Serial.println("Response: ");
-    while (client.available()){
-      Serial.print(char(client.read()));
-      
-    } 
 
-    //client.print("");
-    //client.stop();
-     
-      
-    Serial.println();
     // save the last time a message was sent
-    previousMillis = currentMillis;
+    previousMillisDistance = currentMillisDistance;
+    } 
+    
+
+void checkForCommand(){
+
+  String msg ="";
+
+  while (client.available()){
+     char _byte=char(client.read());
+     msg += _byte;
+    } 
+  if (msg != ""){
+   Serial.println("Command Recieved: " + msg);
+      if(msg == "Raise"){ 
+        digitalWrite(raisePin, LOW);
+        delay(1000);
+        digitalWrite(raisePin, HIGH);  
+      }
+      else if (msg == "Lower"){
+        
+        digitalWrite(lowerPin, LOW);
+        delay(1000);
+        digitalWrite(lowerPin, HIGH);
+        
+      }
+  } 
+
+  // save the last time a message was sent
+    previousMillisMotor = currentMillisMotor;
   
 }
