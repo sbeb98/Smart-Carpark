@@ -2,7 +2,8 @@ const { ParkData } = require('../database/parkData');
 const { PastParkData } = require('../database/pastParkData');
 const { BookData } = require('../database/bookingData');
 const bookHandleFunc= require('../Booking/bookHandle');
-const {mqttSend} = require('../mqtt/mqtt_test')
+const {mqttSend} = require('../mqtt/mqtt_test');
+const { TrendParkData } = require('../database/trendDatabase');
 //constant to use:
 
 let time = [""];
@@ -27,7 +28,7 @@ const routes = (app, client) =>{
     app.route('/')
         .get(async(req, res)=>{
             try{
-                //find all data to display
+                //find all data to display                
                 const Park = await ParkData.find();
                 //display data
                 res.render('index', {Park});
@@ -43,14 +44,25 @@ const routes = (app, client) =>{
     app.route('/trend')
         .get(async(req,res)=>{
             try{
-                //get data to display
-               const trendPark= await PastParkData.find()
+                //get defualt data to display
+               const query= {Day: 'Monday', Hour: 12}
+               const trendPark= await TrendParkData.findOne(query);
                //display data
                 res.render('trend', {trendPark});
 
             }catch (err){
             console.error(err)
             }
+        })
+        .post(async(req,res)=>{
+            const trendTime = req.body;
+            console.log(trendTime) 
+            const query = {Day: trendTime.dayDropdown, Hour: trendTime.hourDropdown.substring(4)}
+            console.log(query);
+            const trendPark= await TrendParkData.findOne(query);
+            //display data
+            res.render('trend', {trendPark});
+
         })
     
     app.route('/book')

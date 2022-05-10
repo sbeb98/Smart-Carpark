@@ -6,8 +6,11 @@ const { BookData } = require('../database/bookingData');
 const ParkData = require('../database/parkData');
 const databaseFunctions = require('../database/parkData');
 const PastDatabaseFunctions = require('../database/pastParkData');
+const { appendTrendDatabase } = require('../database/trendDatabase');
+
 
 let timePastRecieved; 
+let week =1;
 
 //let interval = 5; 
 
@@ -68,8 +71,9 @@ async function mqttPacketProcess(message){
 
         //loop through and store data into custom class
         let i;
-
-        for (i=0;i<=19;++i){
+        let nameArray=[""];
+        let percentageArray=[""];
+        for (i=0;i<20;++i){
             let name = messageArray[i].slice(0,7);//Park001 -6 cha
             let distance = messageArray[i].slice(8);//Park001-xxx
         
@@ -97,12 +101,41 @@ async function mqttPacketProcess(message){
             //amend current document
             databaseFunctions.appendPark(Park[currentIndex].SpaceNum, occupied_input, percentage_input);
 
+           
+            //update past database arrays if we enter a new hour
+            if(newHourFlag){
+                nameArray[i] = name;
+                percentageArray[i]=percentage_input;
+            }
 
-            //update past database
-        if(newHourFlag)
-            PastDatabaseFunctions.appendPastDocument(Park[currentIndex].SpaceNum, percentage_input);
-        
+
         }
+
+        if(newHourFlag){
+            let day = timeRecieved.getDay();
+            let hour =timeRecieved.getHours();
+            //need week, day,  hour
+            //fix hour if midnight
+            if( hour === 0){
+                hour = 24;
+
+                //if it is a new week adjust week var
+                if(day === 0){
+                    //if week 1 make week 2
+                    if(week === 1)
+                        week =2;
+                    //week 2 go back to week 1
+                    else if(week===2)
+                        week =1;
+                } 
+            }
+
+           await PastDatabaseFunctions.appendPastDocument(nameArray, week, day, hour, percentageArray);
+           //TODO: update trend database
+           await appendTrendDatabase(day, hour);
+        }
+
+        
 
         //update time of last packet recieved
         timePastRecieved =timeRecieved; 

@@ -96,11 +96,14 @@ async function createTrendDatabase(){
         let pArray =[""];
         let i=0;
         let dayCount;
-        for (dayCount=1; dayCount<=7; ++dayCount){ //days loop
+        for (dayCount=0; dayCount<7; ++dayCount){ //days loop
             let dayString;
             //define day based on 
             switch(dayCount){
 
+                case(0):
+                    dayString= 'Sunday';
+                    break;
                 case(1):
                     dayString= 'Monday';
                     break;
@@ -119,17 +122,13 @@ async function createTrendDatabase(){
                 case(6):
                     dayString= 'Saturday';
                     break;
-                case(7):
-                    dayString= 'Sunday';
-                    break;
             }
             
             let hourCount;
             for(hourCount=1;hourCount<=24; ++hourCount){//hours loop
                 
                 const query = {Day: dayCount, Hour: hourCount}
-                const dataFetched = await PastParkData.find(query);
-                
+                const dataFetched = await PastParkData.find(query).exec();
 
                 let TrendDocco = new TrendParkData(
                     {
@@ -147,7 +146,6 @@ async function createTrendDatabase(){
                         //console.log(dataFetched[0][parkString] + ' + ' + dataFetched[1][parkString])
                         TrendDocco[parkString] = (dataFetched[0][parkString] + dataFetched[1][parkString])/2;
 
-                        //console.log(TrendDocco[parkString]);
                         
                     }
 
@@ -173,4 +171,41 @@ async function createTrendDatabase(){
 
 }
 
-module.exports= {TrendParkData :TrendParkData, initialiseTrendDatabase : initialiseTrendDatabase}; 
+
+async function appendTrendDatabase(day, hour){
+    //get the two documents from pastpark database
+    const pastQuery = {Day: day, Hour: hour};
+    const trendQuery={DayNum: day, Hour: hour};
+        try{
+
+            let pastData;
+            let trendDocco;
+            [pastData, trendDocco] = await Promise.all([PastParkData.find(pastQuery).exec(), TrendParkData.findOne(trendQuery).exec() ])
+
+            //  pastData = await PastParkData.find(pastQuery).exec();
+            //  trendDocco =await  TrendParkData.findOne(trendQuery).exec();
+
+            
+
+            let spotCount; 
+            //loop for number of car spots (20) and calculate average data
+            for (spotCount=1; spotCount<=20; ++spotCount){
+                const parkString = 'Park0' + String(spotCount).padStart(2,'0');
+                
+                    trendDocco[parkString] = (pastData[0][parkString] + pastData[1][parkString])/2;
+                    
+                }
+            
+            
+            await trendDocco.save();
+
+        } catch (err){
+            console.error('Trend Data not updated')
+            console.error(err)
+
+        }
+    
+
+}
+
+module.exports= {TrendParkData :TrendParkData, initialiseTrendDatabase : initialiseTrendDatabase, appendTrendDatabase: appendTrendDatabase}; 

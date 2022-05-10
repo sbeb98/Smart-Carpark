@@ -30,7 +30,7 @@ function createPastParkDatabase(weeks){
     let weekCount;
     for (weekCount=1; weekCount<=weeks; ++weekCount){ //weeks loop
         let dayCount;
-        for (dayCount=1; dayCount<=7; ++dayCount){ //days loop
+        for (dayCount=0; dayCount<7; ++dayCount){ //days loop
             let hourCount;
             for(hourCount=1;hourCount<=24; ++hourCount){//hours loop
                 pArray[i]=createPastParkDocument(weekCount, dayCount, hourCount);
@@ -72,51 +72,26 @@ function createPastParkDocument (week, day, hour){
 
 
 
-async function appendPastDocument(Spotname, newPercentage){
+async function appendPastDocument(nameArray, week, day, hour, newPercentageArray){
 
-    const query =  {SpotNum: Spotname};
+    const query =  {Week: week, Day: day, Hour: hour};
     try{
 
         //find this database entry to append
         let PastPark = await PastParkData.findOne(query).exec().catch(e=>{throw new Error('PastParkData could not be found')})
 
-        let dayIndex, hourIndex;
+        let spotCount; 
+        //loop for number of car spots (20)
+        for (spotCount=0; spotCount<20; ++spotCount){
 
-        //loop through each day/hour and shift each entry up 
-        //note there is no day/hour 0
-        for(dayIndex= 14; dayIndex>0; --dayIndex){
-
-            
-
-
-            for(hourIndex =23; hourIndex>0; --hourIndex){
-
-                let dayHourStr= 'Day'+ String(dayIndex) + 'Hour' + String(hourIndex + 1);
-                let newdayHourStr= 'Day'+ String(dayIndex) + 'Hour' + String(hourIndex);
-
-                PastPark[dayHourStr] = PastPark[newdayHourStr];
-                //day14H1: 14H2 = 14H1
-                //day13H24: 14H1 = 13H24 ---below
-                //day13H23: 13H24 = 13H23
-                
+                //insert new percentage
+                PastPark[nameArray[spotCount]] = newPercentageArray[spotCount];
             }
-
-            if (dayIndex !== 1){
-                
-            let dayHourStr= 'Day'+ String(dayIndex) + 'Hour' + String(1);
-            let newdayHourStr= 'Day'+ String(dayIndex-1) + 'Hour' + String(24);
-
-            PastPark[dayHourStr] = PastPark[newdayHourStr];
-
-            }
-
-        }
-
-        PastPark.Day1Hour1 = newPercentage; 
-
-        PastPark.save();
+            //console.log(PastPark);
+        await PastPark.save();
 
     } catch(err){
+        console.error('Error appending Past Park Database')
         console.error(err);
     }
 }
