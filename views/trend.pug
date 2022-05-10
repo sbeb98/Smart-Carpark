@@ -4,7 +4,7 @@ html(lang='en')
    title Parking Experiment
  body
    h1 Yo Wassup Let's see some trends
-   form(action="http://localhost:4000/trend", method="post") 
+   form(action="/trend", method="post") 
         -let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         select(name="dayDropdown", id="dayDropdown" class = "btn-success dropdown-toggle")
             each day in days
