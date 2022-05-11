@@ -54,9 +54,10 @@ const connectToMongoose = async () => {
 
     try{
         mongoose.Promise =global.Promise;
-        await mongoose.connect('mongodb://localhost/PARKdb', {
+
+        await mongoose.connect('mongodb+srv://seb:74T538fpJ92xujZ0@db-mongodb-SAcapstone-4a876ef3.mongo.ondigitalocean.com/Parkdb?tls=true&authSource=admin&replicaSet=db-mongodb-SAcapstone&tlsCAFile=ca-certificate.crt', {
             useNewUrlParser: true, 
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
         });
 
         //if successful
@@ -71,6 +72,7 @@ const connectToMongoose = async () => {
         
     }
     catch (err){
+        console.error(err);
         throw new Error('Unable to Connect to Mongoose')
     }
 
