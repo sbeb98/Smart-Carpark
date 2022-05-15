@@ -3,16 +3,58 @@ html(lang='en')
  head
    title Parking Experiment
  body
-   h1 Yo Wassup Let's see some spots
-   div.remark
-    thead
-      tr 
-       th Park Spot  
-       th Occupied
-         br
-    tbody
-    each park in Park
-      tr 
-        td #{park.SpaceNum}   
-        td #{park.Occupied} 
-          br
+   h1 Level B1
+   div#back
+    div#display
+      span#block1
+      span#block2
+      span#block3
+      span#block4
+      span#areaA A
+      span#areaB B
+      span#areaC C
+      div#areaD 
+      span#areaDText D
+      div#areaE 
+      span#areaEText E
+      div#areaF 
+      span#areaFText F
+      
+      -let i =1;
+      each park in Park
+        span(id = "Park" + i)  
+        
+        - ++i;    
+      div#colourGreen
+      span#legendGreen Available
+      div#colourOrange
+      span#legendOrange Booked
+      div#colourRed
+      span#legendRed Occupied
+   footer
+    p See these links for more Smart Carpark Features!!  
+      a#trend(href= "/trend") Carspace Trends           
+      a#book(href= "/Book")  Carspace Booking
+      br
+      br
+      span Proudly Engineered By Sebastian Aslan
+    
+    style 
+      include style/index.css    
+    
+script. 
+        let Park= !{JSON.stringify(Park)};
+        let i;
+        for(i=1;i<21;++i){
+          if(Park[i-1].Booked){
+            document.getElementById('Park' + i).style["background-color"]= "orange";
+          }
+          else if(Park[i-1].Occupied){
+            document.getElementById('Park' + i).style["background-color"]= "red";
+          }
+          else
+          document.getElementById('Park' + i).style["background-color"]= "limegreen";
+          
+        }
+        
+      

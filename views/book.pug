@@ -3,7 +3,7 @@ html(lang='en')
  head
    title Parking Experiment
  body
-   h1 Yo Wassup Let's see some bookings
+   h1 Carspace Bookings
    form(action="/book", method="post") 
         -let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         select(name="dayDropdown", id="dayDropdown" class = "btn-success dropdown-toggle")
@@ -19,3 +19,14 @@ html(lang='en')
                 option=hour
         br
         button(type="submit") Submit yo Preferences
+  
+   footer
+    p See these links for more Smart Carpark Features!!  
+      a#trend(href= "/") Real Time Carspace Display            
+      a#book(href= "/Trend")  Carspace Trends
+      br
+      br
+      span Proudly Engineered By Sebastian Aslan
+
+   style 
+      include style/book.css

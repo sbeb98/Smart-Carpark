@@ -15,8 +15,8 @@ int distance; // variable for the distance measurement
   const long intervalDistance = 5000;
   const long intervalMotor = 1000;
 
-const char* ssid     = "Sebs phone";// "Telstra8A0916-2";// The SSID (name) of the Wi-Fi network you want to connect to
-const char* password = "dragonite";//"zmzueffzyj";//;//     // The password of the Wi-Fi network
+const char* ssid     =  "Telstra8A0916-2";// The SSID (name) of the Wi-Fi network you want to connect to
+const char* password = "zmzueffzyj";//;//     // The password of the Wi-Fi network
 
 WiFiClient wifiClient;
 WiFiClient client;
@@ -68,7 +68,7 @@ void loop() {
 
    // Use WiFiClient class to create TCP connections
     const uint16_t port = 8888;          // port to use
-    const char * host = "192.168.43.86"; // address of server
+    const char * host = "192.168.0.182"; // address of server
   
   //set interval for sending messages (milliseconds)
   const long interval = 30000;

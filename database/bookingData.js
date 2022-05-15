@@ -16,7 +16,7 @@ const BookSchema = new Schema ({
     DataBinPoints:{
         type: Number
     }, 
-    ParkNum :{
+    SpaceNum :{
         type: String
     },
     Acknowledged :{
