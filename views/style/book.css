@@ -1,0 +1,22 @@
+body{
+    background-color:darkseagreen;
+}
+footer{
+    background-color:aliceblue;
+    width: 700px;
+    position: absolute;
+    top: 150px;
+}
+p{
+    position: relative;
+    left: 10px;
+
+}
+#trend{
+    position: relative;
+    left: 10px;
+}
+#book{
+    position: relative;
+    left: 40px;
+}

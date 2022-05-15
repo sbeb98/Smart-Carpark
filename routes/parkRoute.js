@@ -131,7 +131,7 @@ const routes = (app, client) =>{
                     //if space not free change entry from booked and find new space
                     if(!parkDoc.Occupied){
                         parkDoc.Booked = false;
-                        parkDoc.save();
+                        await parkDoc.save();
 
                         //await waitForNextUpdate();
                         docDetails = await checkForSpace(bookDocco);
@@ -166,7 +166,10 @@ const routes = (app, client) =>{
                      bookDocco = await BookData.findById(docDetails.id);
                 }
 
-    
+                //change booked status
+                query = {SpaceNum : bookDocco.SpaceNum};
+                let update = {Booked: false} ;
+                await ParkData.findOneAndUpdate(query,update, {new : true}).exec();
                 //delete booking from database
                 query = {_id : bookDocco.id};
                 await BookData.deleteOne(query).exec().catch((e) => { throw new Error('Booking not deleted from database')});;
@@ -202,14 +205,7 @@ function checkForSpace(bookDocco){
 
     })
 } 
-            
-function waitForNextUpdate(){
-    return new Promise((Resolve, Reject) =>{
-        const parkDataEmitter = ParkData.watch();
-
-        parkDataEmitter.once('change', change => Resolve())
-    })
-}    
+               
 
 function handleError(res, err){
     console.error(err)

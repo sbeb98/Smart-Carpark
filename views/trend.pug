@@ -3,7 +3,7 @@ html(lang='en')
  head
    title Parking Experiment
  body
-   h1 Yo Wassup Let's see some trends
+   h1 Probability Data
    form(action="/trend", method="post") 
         -let days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         select(name="dayDropdown", id="dayDropdown" class = "btn-success dropdown-toggle")
@@ -18,120 +18,76 @@ html(lang='en')
         button(type="submit", id="submitButton") Submit
 br
 
+div#back
+  div#display
+    span#block1
+    span#block2
+    span#block3
+    span#block4
+    span#areaA A
+    span#areaB B
+    span#areaC C
+    div#areaD 
+    span#areaDText D
+    div#areaE 
+    span#areaEText E
+    div#areaF 
+    span#areaFText F       
+    span.space(id='Park1') #{Math.round(trendPark.Park001)}%
+    span.space(id='Park2') #{Math.round(trendPark.Park002)}%
+    span.space(id='Park3') #{Math.round(trendPark.Park003)}% 
+    span.space(id='Park4') #{Math.round(trendPark.Park004)}%
+    span.space(id='Park5') #{Math.round(trendPark.Park005)}%
+    span.space(id='Park6') #{Math.round(trendPark.Park006)}%
+    span.space(id='Park7') #{Math.round(trendPark.Park007)}%
+    span.space(id='Park8') #{Math.round(trendPark.Park008)}%
+    span.space(id='Park9') #{Math.round(trendPark.Park009)}%
+    span.space(id='Park10') #{Math.round(trendPark.Park010)}%
+    span.space(id='Park11') #{Math.round(trendPark.Park011)}%
+    span.space(id='Park12') #{Math.round(trendPark.Park012)}%
+    span.space(id='Park13') #{Math.round(trendPark.Park013)}%
+    span.space(id='Park14') #{Math.round(trendPark.Park014)}%
+    span.space(id='Park15') #{Math.round(trendPark.Park015)}%
+    span.space(id='Park16') #{Math.round(trendPark.Park016)}%
+    span.space(id='Park17') #{Math.round(trendPark.Park017)}%
+    span.space(id='Park18') #{Math.round(trendPark.Park018)}%
+    span.space(id='Park19') #{Math.round(trendPark.Park019)}%
+    span.space(id='Park20') #{Math.round(trendPark.Park020)}%
+
+    div#colourGreen
+    span#legendGreen Likely Available
+    div#colourOrange
+    span#legendOrange Possibly Available
+    div#colourRed
+    span#legendRed Rarely Available
+
+footer
+    p See these links for more Smart Carpark Features!!  
+      a#trend(href= "/") Real Time Carspace Display            
+      a#book(href= "/Book")  Carspace Booking
+      br
+      br
+      span Proudly Engineered By Sebastian Aslan
+
+style 
+      include style/trend.css
+
 script.
         //display default values
         let trendPark= !{JSON.stringify(trendPark)};
         document.getElementById('dayDropdown').value = trendPark.Day;
         document.getElementById('hourDropdown').value = "Hour"+ trendPark.Hour;
-
-
-        
-    
-
-div       
-  thead
-    tr 
-    th Park Spot  
-    th Percentage Occupied
-      br
-  tbody
-    tr 
-      td Park001   
-      td 
-        span(id='data1') #{trendPark.Park001} 
-        br 
-    tr 
-      td Park002 
-      td
-        span(id='data2') #{trendPark.Park002} 
-        br
-    tr 
-      td Park003
-      td
-        span(id='data3')  #{trendPark.Park003} 
-        br
-    tr 
-      td Park004   
-      td
-        span(id='data4') #{trendPark.Park004} 
-        br
-    tr 
-      td Park005
-      td
-        span(id='data5')  #{trendPark.Park005} 
-        br
-    tr 
-      td Park006  
-      td
-        span(id='data6') #{trendPark.Park006} 
-        br
-    tr 
-      td Park007   
-      td
-        span(id='data7') #{trendPark.Park007} 
-        br
-    tr 
-      td Park008 
-      td
-        span(id='data8') #{trendPark.Park008} 
-        br
-    tr 
-      td Park009 
-      td
-        span(id='data9') #{trendPark.Park009} 
-        br
-    tr 
-      td Park010  
-      td
-        span(id='data10') #{trendPark.Park010} 
-        br
-    tr 
-      td Park011  
-      td
-        span(id='data11') #{trendPark.Park011} 
-        br
-    tr 
-      td Park012
-      td
-        span(id='data12')  #{trendPark.Park012} 
-        br
-    tr 
-      td Park013 
-      td
-        span(id='data13') #{trendPark.Park013} 
-        br
-    tr 
-      td Park014 
-      td
-        span(id='data14') #{trendPark.Park014} 
-        br
-    tr 
-      td Park015   
-      td
-        span(id='data15') #{trendPark.Park015} 
-        br
-    tr 
-      td Park016 
-      td
-        span(id='data16') #{trendPark.Park016} 
-        br
-    tr 
-      td Park017
-      td
-        span(id='data17')  #{trendPark.Park017} 
-        br
-    tr 
-      td Park018   
-      td
-        span(id='data18') #{trendPark.Park018} 
-        br
-    tr 
-      td Park019  
-      td
-        span(id='data19') #{trendPark.Park019} 
-        br
-    tr 
-      td Park020  
-      td
-        span(id='data20') #{trendPark.Park020} 
-        br
+        let spotCount; 
+        //loop for number of car spots (20)
+        for (spotCount=1; spotCount<=20; ++spotCount){
+          let currentPark = trendPark['Park0' + String(spotCount).padStart(2,'0')]; 
+          
+          if(currentPark<=33.3){
+            document.getElementById('Park' + spotCount).style["background-color"]= "red";
+          }
+          else if(currentPark<=66.6){
+            document.getElementById('Park' + spotCount).style["background-color"]= "orange";
+          }
+          else 
+            document.getElementById('Park' + spotCount).style["background-color"]= "limegreen";
+            }
