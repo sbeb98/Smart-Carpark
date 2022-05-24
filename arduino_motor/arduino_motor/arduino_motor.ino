@@ -1,86 +1,51 @@
-#include <ESP8266WiFi.h>
+#define outPinPlus  7
+#define outPinMinus  8
 
+#define inPinMinus 3
+#define inPinPlus 2
+int delayTime = 3000;
 
-const char* ssid     = "Sebs phone";//"Telstra8A0916-2"; // The SSID (name) of the Wi-Fi network you want to connect to
-const char* password = "dragonite";//"zmzueffzyj";//     // The password of the Wi-Fi network
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
 
-WiFiClient wifiClient;
+  pinMode(outPinPlus, OUTPUT);
+  pinMode(outPinMinus, OUTPUT);
 
-
-
-void setup()
-{
-  Serial.begin(115200);         // Start the Serial communication to send messages to the computer
-  delay(10);
-  Serial.println('\n');
-  while(!Serial){};     //wait until serial connection
-  
-  
-  Serial.begin(115200); // // Serial Communication is starting with 9600 of baudrate speed
-  Serial.println("Ultrasonic Sensor HC-SR04 Transmit via MQTT"); // print some text in Serial Monitor
-  Serial.println("with ESP8266");  
-
-  WiFi.begin(ssid, password);             // Connect to the network
-  Serial.print("Connecting to ");
-  Serial.print(ssid); Serial.println(" ...");
-
-  int i = 0;
-  while (WiFi.status() != WL_CONNECTED) { // Wait for the Wi-Fi to connect
-    delay(1000);
-    Serial.print(++i); Serial.print(' ');
-  }
-
-  Serial.println('\n');
-  Serial.println("Connection established!");  
-  Serial.print("IP address:\t");
-  Serial.println(WiFi.localIP());         // Send the IP address of the ESP8266 to the computer
-
-//  pinMode(D1, OUTPUT);
-//
-//  digitalWrite(D1, LOW);
+  pinMode(inPinPlus, INPUT_PULLUP);
+  pinMode(inPinMinus, INPUT_PULLUP);
 
 }
 
 void loop() {
-    const uint16_t port = 8888;          // port to use
-    const char * host = "192.168.43.48"; // address of server
-    String msg ="";
+  //pause motor
+  digitalWrite(outPinPlus, LOW);
+  digitalWrite(outPinMinus, LOW);
 
-    // Use WiFiClient class to create TCP connections
-   WiFiClient client;
+  
+  if(digitalRead(inPinPlus) == LOW)
+    posMotor();
+  if(digitalRead(inPinMinus) == LOW)
+    negMotor();
+  
+ 
 
-    if (!client.connect(host, port)) {
-        Serial.println("connection failed");
-        Serial.println("wait 5 sec...");
-        delay(5000);
-        return;
-    }
+}
 
-    client.print("Motor");
-    Serial.print("Sent : ");
-    Serial.println("Motor");
+void posMotor(){
+  Serial.println("Moving Motor in Pos dir");
+  //move in positive direction 
+  digitalWrite(outPinPlus, HIGH);
+  digitalWrite(outPinMinus, LOW);
+  delay(delayTime);
+  
+}
 
-    delay(500);
-    
-    Serial.println("Response: ");
-    while (client.available()){
-     char _byte=char(client.read());
-     msg += _byte;
-    } 
-
-    Serial.println(msg);   
-    Serial.println();
-//  
-//
-////    if (msg.length()){
-//      digitalWrite(D1, HIGH);   // turn the LED on (HIGH is the voltage level)
-//      Serial.println(analogRead(A0));
-//    //}
-    
-  //msg="";
-
-//  delay(2000);
-//  digitalWrite(D1, LOW);    // turn the LED off by making the voltage LOW
-//  Serial.println(analogRead(A0));
-  delay(2000);
+void negMotor(){
+  Serial.println("Moving Motor in Neg dir");
+  //move in negative direction
+  digitalWrite(outPinPlus, LOW);
+  digitalWrite(outPinMinus, HIGH);
+  delay(delayTime);
+  
 }
