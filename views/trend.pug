@@ -33,26 +33,26 @@ div#back
     span#areaEText E
     div#areaF 
     span#areaFText F       
-    span.space(id='Park1') #{Math.round(trendPark.Park001)}%
-    span.space(id='Park2') #{Math.round(trendPark.Park002)}%
-    span.space(id='Park3') #{Math.round(trendPark.Park003)}% 
-    span.space(id='Park4') #{Math.round(trendPark.Park004)}%
-    span.space(id='Park5') #{Math.round(trendPark.Park005)}%
-    span.space(id='Park6') #{Math.round(trendPark.Park006)}%
-    span.space(id='Park7') #{Math.round(trendPark.Park007)}%
-    span.space(id='Park8') #{Math.round(trendPark.Park008)}%
-    span.space(id='Park9') #{Math.round(trendPark.Park009)}%
-    span.space(id='Park10') #{Math.round(trendPark.Park010)}%
-    span.space(id='Park11') #{Math.round(trendPark.Park011)}%
-    span.space(id='Park12') #{Math.round(trendPark.Park012)}%
-    span.space(id='Park13') #{Math.round(trendPark.Park013)}%
-    span.space(id='Park14') #{Math.round(trendPark.Park014)}%
-    span.space(id='Park15') #{Math.round(trendPark.Park015)}%
-    span.space(id='Park16') #{Math.round(trendPark.Park016)}%
-    span.space(id='Park17') #{Math.round(trendPark.Park017)}%
-    span.space(id='Park18') #{Math.round(trendPark.Park018)}%
-    span.space(id='Park19') #{Math.round(trendPark.Park019)}%
-    span.space(id='Park20') #{Math.round(trendPark.Park020)}%
+    span.space(id='Park1') #{Math.round(100 -trendPark.Park001)}%
+    span.space(id='Park2') #{Math.round(100- trendPark.Park002)}%
+    span.space(id='Park3') #{Math.round(100- trendPark.Park003)}% 
+    span.space(id='Park4') #{Math.round(100- trendPark.Park004)}%
+    span.space(id='Park5') #{Math.round(100- trendPark.Park005)}%
+    span.space(id='Park6') #{Math.round(100- trendPark.Park006)}%
+    span.space(id='Park7') #{Math.round(100- trendPark.Park007)}%
+    span.space(id='Park8') #{Math.round(100- trendPark.Park008)}%
+    span.space(id='Park9') #{Math.round(100- trendPark.Park009)}%
+    span.space(id='Park10') #{Math.round(100- trendPark.Park010)}%
+    span.space(id='Park11') #{Math.round(100- trendPark.Park011)}%
+    span.space(id='Park12') #{Math.round(100- trendPark.Park012)}%
+    span.space(id='Park13') #{Math.round(100- trendPark.Park013)}%
+    span.space(id='Park14') #{Math.round(100- trendPark.Park014)}%
+    span.space(id='Park15') #{Math.round(100- trendPark.Park015)}%
+    span.space(id='Park16') #{Math.round(100- trendPark.Park016)}%
+    span.space(id='Park17') #{Math.round(100- trendPark.Park017)}%
+    span.space(id='Park18') #{Math.round(100- trendPark.Park018)}%
+    span.space(id='Park19') #{Math.round(100- trendPark.Park019)}%
+    span.space(id='Park20') #{Math.round(100- trendPark.Park020)}%
 
     div#colourGreen
     span#legendGreen Likely Available
@@ -83,11 +83,11 @@ script.
           let currentPark = trendPark['Park0' + String(spotCount).padStart(2,'0')]; 
           
           if(currentPark<=33.3){
-            document.getElementById('Park' + spotCount).style["background-color"]= "red";
+            document.getElementById('Park' + spotCount).style["background-color"]= "limegreen";
           }
           else if(currentPark<=66.6){
             document.getElementById('Park' + spotCount).style["background-color"]= "orange";
           }
           else 
-            document.getElementById('Park' + spotCount).style["background-color"]= "limegreen";
+            document.getElementById('Park' + spotCount).style["background-color"]= "red";
             }
